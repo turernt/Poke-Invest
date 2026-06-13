@@ -19,7 +19,7 @@ const fadeUp = {
 function ConnexionForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirect") ?? "/dashboard/";
+  const redirectTo = searchParams.get("redirect") ?? "/dashboard";
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);

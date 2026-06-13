@@ -20,7 +20,7 @@ function CallbackHandler() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const next = searchParams.get("next") ?? "/dashboard/";
+    const next = searchParams.get("next") ?? "/dashboard";
     const code = searchParams.get("code");
 
     async function handle() {

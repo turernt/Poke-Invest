@@ -14,19 +14,34 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https:",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://accounts.google.com",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://accounts.google.com https://cdn.jsdelivr.net https://api.ebay.com",
       "frame-src https://accounts.google.com",
     ].join("; "),
   },
 ];
 
 const nextConfig: NextConfig = {
+  trailingSlash: false,
+
   async headers() {
     return [
       {
         source: "/(.*)",
         headers: securityHeaders,
       },
+    ];
+  },
+
+  async rewrites() {
+    return [
+      // Serve dashboard HTML files via Next.js rewrites so the CSS path is correct
+      { source: "/dashboard", destination: "/dashboard/index.html" },
+      { source: "/dashboard/", destination: "/dashboard/index.html" },
+      { source: "/dashboard/cartes_unite", destination: "/dashboard/cartes_unite.html" },
+      { source: "/dashboard/cartes_pca", destination: "/dashboard/cartes_pca.html" },
+      { source: "/dashboard/items_scelles", destination: "/dashboard/items_scelles.html" },
+      { source: "/dashboard/mastersets", destination: "/dashboard/mastersets.html" },
+      { source: "/dashboard/profile", destination: "/dashboard/profile.html" },
     ];
   },
 };
