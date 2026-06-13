@@ -59,7 +59,7 @@
             <div class="user-avatar" id="userAvatar">?</div>
             <div><div class="user-name" id="userName">Chargement…</div><div class="user-role">Dresseur·se</div></div>
         </div>
-        <button onclick="handleLogout()" title="Se déconnecter" style="display:flex;align-items:center;gap:6px;background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:6px 4px;border-radius:8px;transition:color .2s;width:100%;margin-bottom:4px;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text-muted)'">
+        <button onclick="handleLogout()" title="Se déconnecter" style="display:flex;align-items:center;gap:6px;background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:6px 4px;border-radius:8px;transition:color .2s;width:100%;margin-bottom:4px;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--muted)'">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             Se déconnecter
         </button>
@@ -84,7 +84,7 @@
                 <div class="stat-label">Total investi</div>
                 <div class="stat-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
             </div>
-            <div class="stat-value" id="cnt-invest">1 450 €</div>
+            <div class="stat-value" id="cnt-invest">—</div>
             <div class="stat-footer">Capital de départ</div>
         </div>
         <div class="stat-card c-gold">
@@ -92,7 +92,7 @@
                 <div class="stat-label">Valeur estimée</div>
                 <div class="stat-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
             </div>
-            <div class="stat-value warning" id="cnt-value">10 045 €</div>
+            <div class="stat-value warning" id="cnt-value">—</div>
             <div class="stat-footer">Prix de marché actuel</div>
         </div>
         <div class="stat-card c-green">
@@ -100,36 +100,50 @@
                 <div class="stat-label">Plus-value virtuelle</div>
                 <div class="stat-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></div>
             </div>
-            <div class="stat-value positive" id="cnt-virtual">+8 595 €</div>
+            <div class="stat-value" id="cnt-virtual">—</div>
             <div class="stat-footer">Si vente totale aujourd'hui</div>
         </div>
         <div class="stat-card c-red">
             <div class="stat-card-top">
-                <div class="stat-label">Bénéfices réalisés</div>
+                <div class="stat-label">Articles suivis</div>
                 <div class="stat-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h2v-4z"/></svg></div>
             </div>
-            <div class="stat-value positive" id="cnt-real">+95 €</div>
-            <div class="stat-footer">Ventes encaissées</div>
+            <div class="stat-value" id="cnt-items">—</div>
+            <div class="stat-footer">Dans votre collection</div>
         </div>
     </div>
 
-    <div class="charts-row">
+    <div class="charts-row" id="chartsRow" style="display:none;">
         <div class="panel">
             <div class="panel-header">
-                <span class="panel-title">Évolution de la valeur</span>
-                <span class="panel-badge">× 6.9 depuis l'entrée</span>
+                <span class="panel-title">Répartition par catégorie</span>
+                <span class="panel-badge" id="roiBadge">Chargement…</span>
             </div>
             <div class="chart-wrap"><canvas id="portfolioChart"></canvas></div>
         </div>
         <div class="panel">
             <div class="panel-header"><span class="panel-title">Top Performers</span></div>
-            <ul class="performer-list">
-                <li class="performer-item"><span class="performer-rank top">01</span><div class="performer-info"><div class="performer-name">Coffret Eaux Florissantes</div><div class="performer-cat">Scellé · EV 151</div></div><span class="performer-gain">+90 €</span></li>
-                <li class="performer-item"><span class="performer-rank top">02</span><div class="performer-info"><div class="performer-name">Favianos 288/217</div><div class="performer-cat">Unité · Héros Transcendants</div></div><span class="performer-gain">+44 €</span></li>
-                <li class="performer-item"><span class="performer-rank">03</span><div class="performer-info"><div class="performer-name">Mega-Brutalibré EX</div><div class="performer-cat">Unité · Héros Transcendants</div></div><span class="performer-gain">+39 €</span></li>
-                <li class="performer-item"><span class="performer-rank">04</span><div class="performer-info"><div class="performer-name">Steelix 208/182</div><div class="performer-cat">Unité · Série inconnue</div></div><span class="performer-gain">+29 €</span></li>
-                <li class="performer-item"><span class="performer-rank">05</span><div class="performer-info"><div class="performer-name">Kangourex EX 190/165</div><div class="performer-cat">Unité · 151</div></div><span class="performer-gain">+9 €</span></li>
+            <ul class="performer-list" id="perfList">
+                <li style="text-align:center;padding:32px 0;color:var(--muted-light);font-size:13px;">Chargement…</li>
             </ul>
+        </div>
+    </div>
+
+    <!-- Empty state new users -->
+    <div id="emptyState" style="display:none;text-align:center;padding:64px 20px 40px;">
+        <div style="width:72px;height:72px;border-radius:50%;background:var(--gold-dim);border:1.5px solid rgba(245,184,0,.2);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#b08a00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <h2 style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:8px;">Votre collection est vide</h2>
+        <p style="font-size:14px;color:var(--muted);max-width:360px;margin:0 auto 28px;line-height:1.65;">Commencez par ajouter vos premières cartes, items scellés ou mastersets pour voir votre portfolio prendre vie.</p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <a href="cartes_unite.html" style="display:inline-flex;align-items:center;gap:7px;background:var(--red);color:white;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;transition:background .15s;" onmouseover="this.style.background='var(--red-hover)'" onmouseout="this.style.background='var(--red)'">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                Ajouter des cartes
+            </a>
+            <a href="items_scelles.html" style="display:inline-flex;align-items:center;gap:7px;background:var(--card);color:var(--text-2);border:1.5px solid var(--border);padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;transition:background .15s;" onmouseover="this.style.background='var(--blue-dim)'" onmouseout="this.style.background='var(--card)'">
+                Ajouter des scellés
+            </a>
         </div>
     </div>
 </main>
@@ -145,57 +159,73 @@
     document.getElementById('todayDate').textContent =
         d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
 
-    const ctx = document.getElementById('portfolioChart').getContext('2d');
-    const grad = ctx.createLinearGradient(0, 0, 0, 260);
-    grad.addColorStop(0, 'rgba(37,87,199,0.16)');
-    grad.addColorStop(1, 'rgba(37,87,199,0)');
+    var portfolioChartInstance = null;
 
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ['Départ', 'M+2', 'M+4', 'M+6', 'M+8', 'M+10', 'Actuel'],
-            datasets: [{
-                data: [1575, 2800, 4100, 5800, 7200, 8900, 10045],
-                borderColor: '#2557C7',
-                backgroundColor: grad,
-                borderWidth: 2.5,
-                pointBackgroundColor: '#F5B800',
-                pointBorderColor: '#0B1623',
-                pointBorderWidth: 2,
-                pointRadius: 5,
-                pointHoverRadius: 8,
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: {
-                legend: {display: false},
-                tooltip: {
-                    backgroundColor: '#0B1623',
-                    titleColor: 'rgba(255,255,255,0.45)',
-                    bodyColor: '#F5B800',
-                    bodyFont: {family: 'Manrope', size: 16, weight: '700'},
-                    padding: 14, cornerRadius: 10, displayColors: false,
-                    callbacks: { label: c => new Intl.NumberFormat('fr-FR', {style:'currency',currency:'EUR'}).format(c.parsed.y) }
-                }
+    function drawCategoryChart(cats) {
+        var ctx = document.getElementById('portfolioChart').getContext('2d');
+        if (portfolioChartInstance) { portfolioChartInstance.destroy(); }
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        var gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
+        var tickColor = isDark ? '#8b95a3' : '#6B7280';
+
+        portfolioChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: cats.map(function(c) { return c.label; }),
+                datasets: [
+                    {
+                        label: 'Investi',
+                        data: cats.map(function(c) { return c.invest; }),
+                        backgroundColor: 'rgba(37,87,199,0.18)',
+                        borderColor: '#2557C7',
+                        borderWidth: 1.5,
+                        borderRadius: 6,
+                        borderSkipped: false
+                    },
+                    {
+                        label: 'Valeur actuelle',
+                        data: cats.map(function(c) { return c.cote; }),
+                        backgroundColor: 'rgba(245,184,0,0.22)',
+                        borderColor: '#d49c00',
+                        borderWidth: 1.5,
+                        borderRadius: 6,
+                        borderSkipped: false
+                    }
+                ]
             },
-            scales: {
-                y: {
-                    beginAtZero: false,
-                    grid: {color: 'rgba(0,0,0,0.04)', drawBorder: false},
-                    border: {display: false},
-                    ticks: {font: {family: 'Manrope', size: 11}, color: '#6B7280', callback: v => v >= 1000 ? (v/1000).toFixed(0)+'k €' : v+' €'}
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: { font: {family:'Manrope',size:11}, color: tickColor, boxWidth: 10, boxHeight: 10, borderRadius: 3, useBorderRadius: true, padding: 14 }
+                    },
+                    tooltip: {
+                        backgroundColor: '#0B1623',
+                        titleColor: 'rgba(255,255,255,0.5)',
+                        bodyColor: '#F5B800',
+                        bodyFont: {family:'Manrope',size:13,weight:'700'},
+                        padding: 12, cornerRadius: 10, displayColors: true,
+                        callbacks: { label: function(c) { return ' ' + new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'}).format(c.parsed.y); } }
+                    }
                 },
-                x: {
-                    grid: {display: false},
-                    border: {display: false},
-                    ticks: {font: {family: 'Manrope', size: 11}, color: '#6B7280'}
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {color: gridColor, drawBorder: false},
+                        border: {display: false},
+                        ticks: {font:{family:'Manrope',size:11}, color: tickColor, callback: function(v) { return v >= 1000 ? (v/1000).toFixed(0)+'k €' : v+' €'; }}
+                    },
+                    x: {
+                        grid: {display: false},
+                        border: {display: false},
+                        ticks: {font:{family:'Manrope',size:11}, color: tickColor}
+                    }
                 }
             }
-        }
-    });
+        });
+    }
 
     // ── Page transitions ──
     document.querySelectorAll('a[href]').forEach(function(a) {
@@ -279,58 +309,79 @@
             { data: items },
             { data: sets }
         ] = await Promise.all([
-            client.from('cartes_unite').select('prix_achat, cote, carte, numero, serie, benef:cote'),
+            client.from('cartes_unite').select('prix_achat, cote, carte, numero, serie'),
             client.from('cartes_pca').select('prix_achat, cote, carte, numero, serie'),
             client.from('items_scelles').select('prix_achat, cote, produit, serie'),
             client.from('mastersets').select('prix_achat, cote, nom, serie'),
         ]);
 
+        const fmt = n => new Intl.NumberFormat('fr-FR', {style:'currency', currency:'EUR'}).format(n);
+
         const allItems = [...(cartes||[]), ...(pca||[]), ...(items||[]), ...(sets||[])];
+        const totalItems = allItems.length;
         const totalInvesti = allItems.reduce((s, r) => s + (parseFloat(r.prix_achat) || 0), 0);
         const totalCote = allItems.reduce((s, r) => s + (parseFloat(r.cote) || 0), 0);
         const plusValue = totalCote - totalInvesti;
-        const fmt = n => new Intl.NumberFormat('fr-FR', {style:'currency', currency:'EUR'}).format(n);
 
-        const investEl = document.getElementById('cnt-invest');
-        const valueEl = document.getElementById('cnt-value');
+        document.getElementById('cnt-invest').textContent  = fmt(totalInvesti);
+        document.getElementById('cnt-value').textContent   = fmt(totalCote);
+        document.getElementById('cnt-items').textContent   = totalItems;
+
         const virtualEl = document.getElementById('cnt-virtual');
+        virtualEl.textContent  = (plusValue >= 0 ? '+' : '') + fmt(plusValue);
+        virtualEl.className    = 'stat-value ' + (plusValue >= 0 ? 'positive' : 'negative');
 
-        if (investEl) investEl.textContent = fmt(totalInvesti);
-        if (valueEl) valueEl.textContent = fmt(totalCote);
-        if (virtualEl) {
-            virtualEl.textContent = (plusValue >= 0 ? '+' : '') + fmt(plusValue);
-            virtualEl.className = 'stat-value ' + (plusValue >= 0 ? 'positive' : 'negative');
-        }
+        // Afficher le bon état
+        if (totalItems === 0) {
+            document.getElementById('emptyState').style.display  = 'block';
+            document.getElementById('chartsRow').style.display   = 'none';
+        } else {
+            document.getElementById('emptyState').style.display  = 'none';
+            document.getElementById('chartsRow').style.display   = '';
 
-        // Top performers : toutes tables confondues, triées par bénéfice décroissant
-        const allWithBenef = [
-            ...(cartes||[]).map(r => ({ nom: r.carte + ' ' + r.numero, cat: 'Unité · ' + (r.serie||''), benef: r.cote - r.prix_achat })),
-            ...(pca||[]).map(r => ({ nom: r.carte + ' ' + r.numero, cat: 'Gradée · ' + (r.serie||''), benef: r.cote - r.prix_achat })),
-            ...(items||[]).map(r => ({ nom: r.produit, cat: 'Scellé · ' + (r.serie||''), benef: r.cote - r.prix_achat })),
-            ...(sets||[]).map(r => ({ nom: r.nom, cat: 'Masterset · ' + (r.serie||''), benef: r.cote - r.prix_achat })),
-        ].sort((a, b) => b.benef - a.benef).slice(0, 5);
+            // Badge ROI
+            const badge = document.getElementById('roiBadge');
+            if (badge && totalInvesti > 0) {
+                const mult = (totalCote / totalInvesti).toFixed(1);
+                badge.textContent = '× ' + mult + ' depuis l\'entrée';
+            } else if (badge) {
+                badge.textContent = totalItems + ' articles';
+            }
 
-        const perfList = document.querySelector('.performer-list');
-        if (perfList && allWithBenef.length) {
-            perfList.innerHTML = allWithBenef.map((p, i) => {
-                const gain = (p.benef >= 0 ? '+' : '') + fmt(p.benef);
-                const rankClass = i < 2 ? 'performer-rank top' : 'performer-rank';
-                return `<li class="performer-item">
-                    <span class="${rankClass}">${String(i+1).padStart(2,'0')}</span>
-                    <div class="performer-info">
-                        <div class="performer-name">${p.nom}</div>
-                        <div class="performer-cat">${p.cat}</div>
-                    </div>
-                    <span class="performer-gain">${gain}</span>
-                </li>`;
-            }).join('');
-        }
+            // Graphique par catégorie
+            const cats = [
+                { label: 'À l\'unité',   invest: (cartes||[]).reduce((s,r)=>s+(parseFloat(r.prix_achat)||0),0), cote: (cartes||[]).reduce((s,r)=>s+(parseFloat(r.cote)||0),0) },
+                { label: 'Gradées',      invest: (pca||[]).reduce((s,r)=>s+(parseFloat(r.prix_achat)||0),0),    cote: (pca||[]).reduce((s,r)=>s+(parseFloat(r.cote)||0),0) },
+                { label: 'Scellés',      invest: (items||[]).reduce((s,r)=>s+(parseFloat(r.prix_achat)||0),0),  cote: (items||[]).reduce((s,r)=>s+(parseFloat(r.cote)||0),0) },
+                { label: 'Mastersets',   invest: (sets||[]).reduce((s,r)=>s+(parseFloat(r.prix_achat)||0),0),   cote: (sets||[]).reduce((s,r)=>s+(parseFloat(r.cote)||0),0) },
+            ].filter(c => c.invest > 0 || c.cote > 0);
 
-        // Mise à jour du badge du graphique
-        const badge = document.querySelector('.panel-badge');
-        if (badge && totalInvesti > 0) {
-            const mult = (totalCote / totalInvesti).toFixed(1);
-            badge.textContent = `× ${mult} depuis l'entrée`;
+            if (cats.length > 0) drawCategoryChart(cats);
+
+            // Top performers
+            const allWithBenef = [
+                ...(cartes||[]).map(r => ({ nom: r.carte + ' ' + r.numero, cat: 'Unité · ' + (r.serie||''), benef: (parseFloat(r.cote)||0) - (parseFloat(r.prix_achat)||0) })),
+                ...(pca||[]).map(r    => ({ nom: r.carte + ' ' + r.numero, cat: 'Gradée · ' + (r.serie||''), benef: (parseFloat(r.cote)||0) - (parseFloat(r.prix_achat)||0) })),
+                ...(items||[]).map(r  => ({ nom: r.produit,               cat: 'Scellé · ' + (r.serie||''), benef: (parseFloat(r.cote)||0) - (parseFloat(r.prix_achat)||0) })),
+                ...(sets||[]).map(r   => ({ nom: r.nom,                   cat: 'Masterset · ' + (r.serie||''), benef: (parseFloat(r.cote)||0) - (parseFloat(r.prix_achat)||0) })),
+            ].sort((a, b) => b.benef - a.benef).slice(0, 5);
+
+            const perfList = document.getElementById('perfList');
+            if (perfList) {
+                perfList.innerHTML = allWithBenef.map((p, i) => {
+                    const gain = (p.benef >= 0 ? '+' : '') + fmt(p.benef);
+                    const gainClass = p.benef >= 0 ? 'performer-gain' : 'performer-gain negative-gain';
+                    const rankClass = i < 2 ? 'performer-rank top' : 'performer-rank';
+                    return '<li class="performer-item">'
+                        + '<span class="' + rankClass + '">' + String(i+1).padStart(2,'0') + '</span>'
+                        + '<div class="performer-info">'
+                        + '<div class="performer-name">' + p.nom + '</div>'
+                        + '<div class="performer-cat">'  + p.cat + '</div>'
+                        + '</div>'
+                        + '<span class="' + gainClass + '">' + gain + '</span>'
+                        + '</li>';
+                }).join('');
+            }
         }
 
     } catch(e) {
