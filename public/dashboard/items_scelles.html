@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%23E3350D'/%3E%3Ccircle cx='16' cy='16' r='15' fill='white' clip-path='inset(50%25 0 0 0)'/%3E%3Crect x='1' y='14.5' width='30' height='3' fill='%230B1623'/%3E%3Ccircle cx='16' cy='16' r='5' fill='white' stroke='%230B1623' stroke-width='2.5'/%3E%3C/svg%3E">
+    <meta name="description" content="PokéInvest — Inventaire de vos items Pokémon scellés.">
+    <meta name="theme-color" content="#0B1623">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PokéInvest">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>PokéInvest — Items Scellés</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+<body>
+<div class="toast-container" id="toastContainer"></div>
+<div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-dialog">
+        <div class="confirm-title" id="confirmTitle"></div>
+        <div class="confirm-body" id="confirmBody"></div>
+        <div class="confirm-actions">
+            <button class="btn-cancel" id="confirmCancel">Annuler</button>
+            <button class="btn-submit" id="confirmOk" style="background:var(--red);">Supprimer</button>
+        </div>
+    </div>
+</div>
+<div class="mobile-header">
+    <div class="logo-mark">
+        <div class="logo-ball"></div>
+        <div class="logo-text">PokéInvest</div>
+    </div>
+    <button class="mobile-theme-toggle" onclick="toggleTheme()" aria-label="Basculer le thème">
+        <svg id="mobileThemeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+</div>
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-mark">
+            <div class="logo-ball"></div>
+            <div class="logo-text">PokéInvest<span>Portfolio Tracker</span></div>
+        </div>
+    </div>
+    <nav class="nav">
+        <div class="nav-section">Navigation</div>
+        <a href="index.html"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></span>Tableau de bord</a>
+        <a href="cartes_unite.html"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="14" height="18" rx="2"/><path d="M10 4h6a2 2 0 0 1 2 2v12"/><path d="M6 8h4M6 12h4"/></svg></span>Cartes à l'unité</a>
+        <a href="cartes_pca.html"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span>Cartes Gradées</a>
+        <a href="items_scelles.html" class="active"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8V21H3V8"/><path d="M23 3H1v5h22V3z"/><path d="M10 12h4"/></svg></span>Items Scellés</a>
+        <a href="mastersets.html"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Mastersets</a>
+        <div class="nav-section" style="margin-top:4px;">Outils</div>
+        <a href="#"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span>Référentiel Séries</a>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="user-pill">
+            <div class="user-avatar" id="userAvatar">I</div>
+            <div><div class="user-name" id="userName">Investisseur</div><div class="user-role">Dresseur·se</div></div>
+        </div>
+        <button onclick="handleLogout()" title="Se déconnecter" style="display:flex;align-items:center;gap:6px;background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:6px 4px;border-radius:8px;transition:color .2s;width:100%;margin-bottom:4px;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text-muted)'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Se déconnecter
+        </button>
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Basculer le thème">
+            <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            <span class="tt-label" id="themeLabel">Mode sombre</span>
+        </button>
+    </div>
+</aside>
+<main class="main">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Items Scellés</h1>
+            <p class="page-subtitle">Coffrets, boîtes, displays · Suivi complet</p>
+        </div>
+        <button class="btn-add" onclick="openModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg> Ajouter</button>
+    </div>
+
+    <div class="top-bar">
+        <div class="search-wrap">
+            <span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>
+            <input type="text" id="searchInput" placeholder="Rechercher…" oninput="applyFiltersAndSort()" aria-label="Rechercher">
+        </div>
+        <div class="bar-right">
+            <div class="view-toggle">
+                <button class="view-btn active" id="btnViewList" onclick="setView('list')" title="Vue liste">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                </button>
+                <button class="view-btn" id="btnViewGallery" onclick="setView('gallery')" title="Vue galerie">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                </button>
+            </div>
+            <div class="count-badge" id="totalItemsBadge">0</div>
+        </div>
+    </div>
+
+    <div class="table-wrap" id="listView">
+        <table id="dataTable">
+            <thead><tr>
+<th class="cb-th"><input type="checkbox" class="row-cb" id="selectAllCb" onchange="toggleSelectAll(this)" title="Tout sélectionner"></th>
+<th onclick="sortTable(0)">Produit</th>
+<th onclick="sortTable(1)">Bloc</th>
+<th onclick="sortTable(2)">Série</th>
+<th onclick="sortTable(3)">Type</th>
+<th onclick="sortTable(4)">Qté</th>
+<th onclick="sortTable(5)">Achat</th>
+<th onclick="sortTable(6)">Cote</th>
+<th onclick="sortTable(7)">Plus-value</th>
+<th style="text-align:right;cursor:default">Actions</th></tr></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+    <div id="galleryView" style="display:none">
+        <div class="gallery-grid" id="galleryGrid"></div>
+    </div>
+</main>
+<nav class="mobile-bottom-nav">
+    <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg><span>Accueil</span></a>
+    <a href="cartes_unite.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="14" height="18" rx="2"/><path d="M10 4h6a2 2 0 0 1 2 2v12"/><path d="M6 8h4M6 12h4"/></svg><span>À l'unité</span></a>
+    <a href="cartes_pca.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span>Gradées</span></a>
+    <a href="items_scelles.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8V21H3V8"/><path d="M23 3H1v5h22V3z"/><path d="M10 12h4"/></svg><span>Scellés</span></a>
+    <a href="mastersets.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>Sets</span></a>
+    </nav>
+
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <div class="modal-head">
+            <span class="modal-title" id="modalTitle">Ajouter</span>
+            <button class="modal-close" onclick="closeModal()" aria-label="Fermer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <form id="itemForm" onsubmit="handleFormSubmit(event)">
+            <input type="hidden" id="formItemIndex" value="-1">
+            <div class="form-group">
+                    <label for="formProduit">Nom du produit</label>
+                    <input type="text" id="formProduit" placeholder="Ex: Coffret Eaux Florissantes…" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="formBloc">Bloc</label>
+                        <select id="formBloc" required>
+                            <option value="ECARLATE ET VIOLET">Écarlate et Violet</option>
+                            <option value="EPEE ET BOUCLIER">Épée et Bouclier</option>
+                            <option value="MEGA EVOLUTION">Mega Evolution</option>
+                            <option value="Inconnu">Autre / Inconnu</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="formType">Type</label>
+                        <select id="formType">
+                            <option value="Coffret">Coffret</option>
+                            <option value="Boîte">Boîte</option>
+                            <option value="Boosters">Boosters</option>
+                            <option value="ETB">ETB</option>
+                            <option value="Display">Display</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="formSerie">Série</label>
+                        <input type="text" id="formSerie" placeholder="Ex: 151…" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="formQte">Quantité</label>
+                        <input type="number" id="formQte" min="1" value="1" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="formPrix">Prix d'achat (€)</label>
+                        <input type="number" id="formPrix" step="0.01" min="0" placeholder="0,00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="formCote">Cote actuelle (€)</label>
+                        <input type="number" id="formCote" step="0.01" min="0" placeholder="0,00" required>
+                    </div>
+                </div>
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" onclick="closeModal()">Annuler</button>
+                <button type="submit" id="btnSubmitForm" class="btn-submit">Ajouter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const fmt = n => new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'}).format(n);
+    const EDIT_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+    const TRASH_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>`;
+
+    function blocClass(b){
+        const s = (b||'').toUpperCase();
+        if(s.includes('ECARLATE')||s.includes('VIOLET')) return 'ev';
+        if(s.includes('EPEE')||s.includes('BOUCLIER')) return 'eb';
+        if(s.includes('MEGA')) return 'me';
+        return 'other';
+    }
+
+    let itemsData = [{"produit":"Coffret Dresseur d'Élite 151","bloc":"ECARLATE ET VIOLET","serie":"151","type":"ETB","quantite":1,"prix_achat":55,"cote":80,"benef":25},{"produit":"Display Évolutions Prismatiques","bloc":"ECARLATE ET VIOLET","serie":"ÉVOLUTIONS PRISMATIQUES","type":"Display","quantite":1,"prix_achat":160,"cote":220,"benef":60},{"produit":"Coffret Pokémon GO","bloc":"EPEE ET BOUCLIER","serie":"POKÉMON GO","type":"Coffret","quantite":2,"prix_achat":35,"cote":45,"benef":10},{"produit":"ETB Destinées de Paldea","bloc":"ECARLATE ET VIOLET","serie":"DESTINÉES DE PALDEA","type":"ETB","quantite":1,"prix_achat":50,"cote":58,"benef":8}];
+    let currentSort = {col:-1, asc:true};
+
+    function renderTable(data){
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        if(!data.length){
+            tbody.innerHTML = `<tr>colspan="10"<div class="empty-icon">${BOX_ICON}</div><p>Aucun item scellé trouvé.</p></div></td></tr>`;
+        } else {
+            data.forEach(row => {
+                const ri = itemsData.indexOf(row);
+                const ben = row.benef;
+                const bc = ben>0?'positive':ben<0?'negative':'neutral';
+                const bt = ben>0?'+'+fmt(ben):fmt(ben);
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                                        <td class="cb-td"><input type="checkbox" class="row-cb" data-idx="${ri}" onchange="toggleRowSelect(this)"></td>
+                    <td class="name-cell">${row.produit}</td>
+                    <td data-label="Bloc"><span class="bloc-chip ${blocClass(row.bloc)}">${row.bloc}</span></td>
+                    <td data-label="Série" style="color:var(--muted);font-size:13px;">${row.serie}</td>
+                    <td data-label="Type"><span class="num-badge">${row.type||'—'}</span></td>
+                    <td data-label="Qté" style="font-weight:600;">${row.quantite}</td>
+                    <td data-label="Achat" class="price-cell">${fmt(row.prix_achat)}</td>
+                    <td data-label="Cote" class="price-cell">${fmt(row.cote)}</td>
+                    <td data-label="Plus-value" class="${bc}">${bt}</td>
+                    <td><div class="actions">
+                        <button class="act-btn ebay" id="ebay-btn-${ri}" onclick="fetchEbayPrice(this, '${row.produit} pokemon sealed', itemsData[${ri}], ${ri})" title="Actualiser prix eBay">${EBAY_ICON_SVG}</button>
+                        <button class="act-btn edit" onclick="openEditModal(${ri})" title="Modifier">${EDIT_ICON}</button>
+                        <button class="act-btn del" onclick="deleteItem(${ri})" title="Supprimer">${TRASH_ICON}</button>
+                    </div></td>`;
+                tbody.appendChild(tr);
+            });
+        }
+        const n = data.length;
+        document.getElementById('totalItemsBadge').textContent = n + ' item' + (n>1?'s':'');
+    }
+
+    function applyFiltersAndSort(){
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        let d = itemsData.filter(r => ['produit','bloc','serie','type'].some(k => String(r[k]).toLowerCase().includes(q)));
+        if(currentSort.col !== -1){
+            const keys = [[4,5,6,7]];
+            const k = keys[currentSort.col];
+            const asc = currentSort.asc;
+            const numCols = [4,5,6,7];
+            const isNum = numCols.includes(currentSort.col);
+            d.sort((a,b) => isNum ? (asc ? (parseFloat(a[k])||0)-(parseFloat(b[k])||0) : (parseFloat(b[k])||0)-(parseFloat(a[k])||0))
+                                 : (asc ? a[k].localeCompare(b[k]) : b[k].localeCompare(a[k])));
+        }
+        _lastGalleryData = d;
+        renderTable(d);
+        if (typeof _currentView !== 'undefined' && _currentView === 'gallery') renderGallery(d);
+    }
+
+    function sortTable(col){
+        document.querySelectorAll('th').forEach(t => t.classList.remove('sort-asc','sort-desc'));
+        const asc = currentSort.col === col ? !currentSort.asc : true;
+        currentSort = {col, asc};
+        document.querySelectorAll('th')[col].classList.add(asc ? 'sort-asc' : 'sort-desc');
+        applyFiltersAndSort();
+    }
+
+    function deleteItem(i){
+        showConfirm('Supprimer ?', 'Cette action est irréversible.', function() { itemsData.splice(i,1); applyFiltersAndSort(); showToast('Élément supprimé', 'success'); });
+    }
+
+    function openModal(){
+        document.getElementById('itemForm').reset();
+        document.getElementById('formItemIndex').value = '-1';
+        document.getElementById('modalTitle').textContent = 'Ajouter';
+        document.getElementById('btnSubmitForm').textContent = 'Ajouter';
+        document.getElementById('modalOverlay').classList.add('active');
+    }
+
+    const BOX_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8V21H3V8"/><path d="M23 3H1v5h22V3z"/><path d="M10 12h4"/></svg>`;
+
+    function openEditModal(i){
+        const r = itemsData[i];
+        document.getElementById('formItemIndex').value = i;
+        document.getElementById('formProduit').value = r.produit;
+        const s = document.getElementById('formBloc');
+        if(!Array.from(s.options).some(o=>o.value===r.bloc)) s.add(new Option(r.bloc,r.bloc));
+        s.value = r.bloc;
+        document.getElementById('formSerie').value = r.serie;
+        document.getElementById('formType').value = r.type || 'Autre';
+        document.getElementById('formQte').value = r.quantite || 1;
+        document.getElementById('formPrix').value = r.prix_achat;
+        document.getElementById('formCote').value = r.cote;
+        document.getElementById('modalTitle').textContent = 'Modifier l\'item';
+        document.getElementById('btnSubmitForm').textContent = 'Enregistrer';
+        document.getElementById('modalOverlay').classList.add('active');
+    }
+
+    function handleFormSubmit(e){
+        e.preventDefault();
+        const produit = document.getElementById('formProduit').value;
+        const bloc = document.getElementById('formBloc').value;
+        const serie = document.getElementById('formSerie').value.toUpperCase();
+        const type = document.getElementById('formType').value;
+        const quantite = parseInt(document.getElementById('formQte').value);
+        const prix = parseFloat(document.getElementById('formPrix').value);
+        const cote = parseFloat(document.getElementById('formCote').value);
+        const idx = parseInt(document.getElementById('formItemIndex').value);
+        const item = {produit, bloc, serie, type, quantite, prix_achat:prix, cote, benef:cote-prix};
+        if(idx===-1) itemsData.unshift(item); else Object.assign(itemsData[idx],item);
+        applyFiltersAndSort(); closeModal();
+    }
+
+    function closeModal(){ document.getElementById('modalOverlay').classList.remove('active'); }
+
+    document.getElementById('modalOverlay').addEventListener('click', e => {
+        if(e.target === document.getElementById('modalOverlay')) closeModal();
+    });
+
+    // ===== EBAY PRICE FETCH =====
+    const EBAY_ICON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l2.5 2.5"/></svg>`;
+    const SPIN_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>`;
+
+    const tooltip = document.createElement('div');
+    tooltip.className = 'ebay-tooltip';
+    document.body.appendChild(tooltip);
+
+    async function fetchEbayPrice(btn, query, dataObj, rowIndex) {
+        btn.classList.add('loading');
+        btn.innerHTML = SPIN_ICON;
+        btn.disabled = true;
+
+        try {
+            const res = await fetch(`/.netlify/functions/ebay-price?q=${encodeURIComponent(query)}`);
+            const data = await res.json();
+
+            btn.disabled = false;
+            btn.classList.remove('loading');
+
+            if (data.error || data.price === null) {
+                btn.classList.add('error');
+                btn.title = data.error || 'Aucun résultat eBay';
+                btn.innerHTML = EBAY_ICON_SVG;
+                setTimeout(() => btn.classList.remove('error'), 3000);
+                return;
+            }
+
+            dataObj.cote = data.price;
+            dataObj.benef = Math.round((data.price - dataObj.prix_achat) * 100) / 100;
+
+            btn.classList.add('success');
+            btn.innerHTML = EBAY_ICON_SVG;
+            setTimeout(() => { btn.classList.remove('success'); applyFiltersAndSort(); }, 800);
+
+            const items = data.items || [];
+            if (items.length) {
+                tooltip.innerHTML = `
+                    <div class="tt-price">Médiane : ${fmt(data.price)}</div>
+                    <div class="tt-count">${data.count} annonce${data.count > 1 ? 's' : ''} eBay</div>
+                `;
+                const rect = btn.getBoundingClientRect();
+                tooltip.style.top = (rect.top + window.scrollY - tooltip.offsetHeight - 8) + 'px';
+                tooltip.style.left = Math.min(rect.left, window.innerWidth - 280) + 'px';
+                tooltip.classList.add('visible');
+                setTimeout(() => tooltip.classList.remove('visible'), 3500);
+            }
+
+        } catch(err) {
+            btn.disabled = false;
+            btn.classList.remove('loading');
+            btn.classList.add('error');
+            btn.innerHTML = EBAY_ICON_SVG;
+            btn.title = 'Erreur réseau';
+            setTimeout(() => btn.classList.remove('error'), 3000);
+        }
+    }
+
+    // ===== VIEW TOGGLE =====
+    let _currentView = 'list';
+    let _lastGalleryData = [];
+
+    applyFiltersAndSort();
+
+    function setView(v) {
+        _currentView = v;
+        document.getElementById('btnViewList').classList.toggle('active', v === 'list');
+        document.getElementById('btnViewGallery').classList.toggle('active', v === 'gallery');
+        document.getElementById('listView').style.display = v === 'list' ? '' : 'none';
+        document.getElementById('galleryView').style.display = v === 'gallery' ? '' : 'none';
+        if (v === 'gallery') renderGallery(_lastGalleryData);
+    }
+
+    // ===== SEALED PRODUCT IMAGE CACHE =====
+    const _imgCache = {};
+
+    // Build a clean search title from product name + serie
+    function _sealedSearchTitle(produit, serie) {
+        return (produit + ' ' + (serie || '')).trim();
+    }
+
+    // Fetch image via Bulbapedia MediaWiki API (image search by title)
+    async function fetchSealedImage(produit, serie) {
+        const cacheKey = produit + '|' + serie;
+        if (_imgCache[cacheKey] !== undefined) return _imgCache[cacheKey];
+        // Build a search query for Bulbapedia
+        const searchTerm = _sealedSearchTitle(produit, serie) + ' Pokémon box';
+        try {
+            // Use Bulbapedia opensearch to find the closest article, then get its main image
+            const searchUrl = `https://bulbapedia.bulbagarden.net/w/api.php?action=opensearch&search=${encodeURIComponent(searchTerm)}&limit=1&format=json&origin=*`;
+            const sRes = await fetch(searchUrl);
+            const sData = await sRes.json();
+            const title = sData[1] && sData[1][0];
+            if (!title) { _imgCache[cacheKey] = null; return null; }
+            // Get page images
+            const imgUrl = `https://bulbapedia.bulbagarden.net/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=pageimages&pithumbsize=400&format=json&origin=*`;
+            const iRes = await fetch(imgUrl);
+            const iData = await iRes.json();
+            const pages = iData.query?.pages || {};
+            const page = Object.values(pages)[0];
+            const url = page?.thumbnail?.source || null;
+            _imgCache[cacheKey] = url;
+            return url;
+        } catch(e) {
+            _imgCache[cacheKey] = null;
+            return null;
+        }
+    }
+
+    // ===== GALLERY RENDER =====
+    const PLACEHOLDER_BOX_G = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8V21H3V8"/><path d="M23 3H1v5h22V3z"/><path d="M10 12h4"/></svg>`;
+
+    function renderGallery(data) {
+        _lastGalleryData = data;
+        const grid = document.getElementById('galleryGrid');
+        grid.innerHTML = '';
+        if (!data.length) {
+            grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px 0;color:var(--muted);">Aucun item trouvé.</div>`;
+            return;
+        }
+        data.forEach(row => {
+            const ri = itemsData.indexOf(row);
+            const ben = row.benef;
+            const bc = ben>0?'positive':ben<0?'negative':'neutral';
+            const bt = ben>0?'+'+fmt(ben):fmt(ben);
+            const card = document.createElement('div');
+            card.className = 'gallery-card';
+            card.innerHTML = `
+                <div class="gallery-img-wrap">
+                    <div class="gallery-img-placeholder" id="gph-${ri}">${PLACEHOLDER_BOX_G}</div>
+                    <img id="gimg-${ri}" alt="${row.produit}" class="loading" style="display:none">
+                    <span class="gallery-benef-badge ${bc}">${bt}</span>
+                </div>
+                <div class="gallery-info">
+                    <div class="gallery-name">${row.produit}</div>
+                    <div class="gallery-sub">${row.type||''} · ${row.serie}</div>
+                    <div class="gallery-actions">
+                        <button class="gallery-act" onclick="openEditModal(${ri})" title="Modifier">${EDIT_ICON}</button>
+                        <button class="gallery-act del" onclick="deleteItem(${ri})" title="Supprimer">${TRASH_ICON}</button>
+                    </div>
+                </div>`;
+            grid.appendChild(card);
+            fetchSealedImage(row.produit, row.serie).then(url => {
+                const img = document.getElementById(`gimg-${ri}`);
+                const ph = document.getElementById(`gph-${ri}`);
+                if (url && img) {
+                    img.src = url;
+                    img.style.display = '';
+                    img.onload = () => { img.classList.remove('loading'); if(ph) ph.style.display='none'; };
+                    img.onerror = () => { img.style.display='none'; };
+                }
+            });
+        });
+    }
+
+</script>
+
+<!-- BULK ACTION BAR -->
+<div class="bulk-bar" id="bulkBar">
+    <span class="bulk-count" id="bulkCount">0 sélectionné</span>
+    <div class="bulk-sep"></div>
+    <button class="bulk-btn bulk-btn-ebay" onclick="bulkEbay()" title="Actualiser eBay">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l2.5 2.5"/></svg>
+        eBay
+    </button>
+    <button class="bulk-btn bulk-btn-edit" onclick="openBulkEditModal()" title="Modifier">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Modifier
+    </button>
+    <button class="bulk-btn bulk-btn-del" onclick="bulkDelete()" title="Supprimer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        Supprimer
+    </button>
+    <div class="bulk-sep"></div>
+    <div class="bulk-progress" id="bulkProgress"><div class="bulk-progress-bar" id="bulkProgressBar"></div></div>
+    <button class="bulk-close" onclick="clearSelection()" title="Annuler la sélection">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+</div>
+
+<!-- BULK EDIT MODAL -->
+<div class="modal-overlay" id="bulkEditOverlay">
+    <div class="modal bulk-edit-modal">
+        <div class="modal-head">
+            <span class="modal-title" id="bulkEditTitle">Modifier la sélection</span>
+            <button class="modal-close" onclick="closeBulkEditModal()" aria-label="Fermer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div class="bulk-field-hint">Cochez les champs à modifier. Seuls les champs cochés seront appliqués.</div>
+        <div id="bulkFieldsContainer"></div>
+        <div class="form-actions">
+            <button type="button" class="btn-cancel" onclick="closeBulkEditModal()">Annuler</button>
+            <button type="button" class="btn-submit" onclick="applyBulkEdit()">Appliquer</button>
+        </div>
+    </div>
+</div>
+
+
+<script id="bulk-js">
+// Références page
+const _currentData = itemsData;
+function _ebayQuery(row) { return row.produit + ' pokemon sealed'; }
+const _pageFields = [{"key": "produit", "label": "Produit", "type": "text", "placeholder": "Coffret Eaux Florissantes"},
+{"key": "bloc", "label": "Bloc", "type": "select", "options": [{"v": "ECARLATE ET VIOLET", "l": "Écarlate et Violet"}, {"v": "EPEE ET BOUCLIER", "l": "Épée et Bouclier"}, {"v": "MEGA EVOLUTION", "l": "Mega Evolution"}, {"v": "Inconnu", "l": "Autre/Inconnu"}]},
+{"key": "serie", "label": "Série", "type": "text", "placeholder": "151"},
+{"key": "type", "label": "Type", "type": "select", "options": [{"v": "Coffret", "l": "Coffret"}, {"v": "Boîte", "l": "Boîte"}, {"v": "Boosters", "l": "Boosters"}, {"v": "ETB", "l": "ETB"}, {"v": "Display", "l": "Display"}, {"v": "Autre", "l": "Autre"}]},
+{"key": "quantite", "label": "Quantité", "type": "number", "placeholder": "1", "step": "1", "min": "1"},
+{"key": "prix_achat", "label": "Prix achat", "type": "number", "placeholder": "0.00", "step": "0.01", "min": "0"},
+{"key": "cote", "label": "Cote (€)", "type": "number", "placeholder": "0.00", "step": "0.01", "min": "0"}];
+
+// ===== BULK SELECTION =====
+let selectedIndices = new Set();
+
+function toggleSelectAll(cb) {
+    const rows = document.querySelectorAll('.row-cb');
+    rows.forEach(r => {
+        r.checked = cb.checked;
+        const idx = parseInt(r.dataset.idx);
+        if (cb.checked) selectedIndices.add(idx);
+        else selectedIndices.delete(idx);
+        r.closest('tr').classList.toggle('selected', cb.checked);
+    });
+    updateBulkBar();
+}
+
+function toggleRowSelect(cb) {
+    const idx = parseInt(cb.dataset.idx);
+    if (cb.checked) selectedIndices.add(idx);
+    else selectedIndices.delete(idx);
+    cb.closest('tr').classList.toggle('selected', cb.checked);
+    // sync header cb
+    const allCbs = document.querySelectorAll('.row-cb');
+    const headerCb = document.getElementById('selectAllCb');
+    if (headerCb) headerCb.checked = allCbs.length > 0 && [...allCbs].every(c => c.checked);
+    updateBulkBar();
+}
+
+function updateBulkBar() {
+    const bar = document.getElementById('bulkBar');
+    const cnt = selectedIndices.size;
+    document.getElementById('bulkCount').textContent = cnt + ' sélectionné' + (cnt > 1 ? 's' : '');
+    bar.classList.toggle('visible', cnt > 0);
+}
+
+function clearSelection() {
+    selectedIndices.clear();
+    document.querySelectorAll('.row-cb').forEach(c => { c.checked = false; c.closest('tr').classList.remove('selected'); });
+    const h = document.getElementById('selectAllCb');
+    if (h) h.checked = false;
+    updateBulkBar();
+}
+
+// ===== BULK DELETE =====
+function bulkDelete() {
+    const cnt = selectedIndices.size;
+    if (!cnt) return;
+    // custom confirm
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(11,22,35,.45);z-index:500;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);';
+    overlay.innerHTML = `<div style="background:white;border-radius:18px;padding:28px 28px 22px;width:360px;max-width:90vw;box-shadow:0 24px 60px rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.9);">
+        <div style="font-size:17px;font-weight:800;color:#111827;margin-bottom:8px;">Supprimer ${cnt} élément${cnt>1?'s':''} ?</div>
+        <div style="font-size:13.5px;color:#6B7280;margin-bottom:22px;line-height:1.55;">Cette action est irréversible.</div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;">
+            <button id="bcCancel" style="background:#EEF0F7;border:none;padding:9px 17px;border-radius:8px;font-family:Manrope,sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:#6B7280;">Annuler</button>
+            <button id="bcConfirm" style="background:#E3350D;color:white;border:none;padding:9px 18px;border-radius:8px;font-family:Manrope,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Supprimer</button>
+        </div>
+    </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#bcCancel').onclick = () => document.body.removeChild(overlay);
+    overlay.querySelector('#bcConfirm').onclick = () => {
+        document.body.removeChild(overlay);
+        const sorted = [...selectedIndices].sort((a,b) => b-a);
+        sorted.forEach(i => _currentData.splice(i, 1));
+        selectedIndices.clear();
+        applyFiltersAndSort();
+        updateBulkBar();
+    };
+}
+
+// ===== BULK EBAY =====
+async function bulkEbay() {
+    const indices = [...selectedIndices];
+    if (!indices.length) return;
+    const bar = document.getElementById('bulkBar');
+    const prog = document.getElementById('bulkProgress');
+    const progBar = document.getElementById('bulkProgressBar');
+    prog.style.display = 'block';
+    let done = 0;
+    for (const idx of indices) {
+        const row = _currentData[idx];
+        if (!row) continue;
+        const query = _ebayQuery(row);
+        try {
+            const res = await fetch(`/.netlify/functions/ebay-price?q=${encodeURIComponent(query)}`);
+            const data = await res.json();
+            if (!data.error && data.price !== null) {
+                row.cote = data.price;
+                row.benef = Math.round((data.price - row.prix_achat) * 100) / 100;
+            }
+        } catch(e) {}
+        done++;
+        progBar.style.width = (done / indices.length * 100) + '%';
+    }
+    setTimeout(() => {
+        prog.style.display = 'none';
+        progBar.style.width = '0%';
+        applyFiltersAndSort();
+        clearSelection();
+    }, 500);
+}
+
+// ===== BULK EDIT MODAL =====
+function openBulkEditModal() {
+    const cnt = selectedIndices.size;
+    if (!cnt) return;
+    document.getElementById('bulkEditTitle').textContent = `Modifier ${cnt} élément${cnt>1?'s':''}`;
+    const container = document.getElementById('bulkFieldsContainer');
+    container.innerHTML = '';
+    _pageFields.forEach(field => {
+        const row = document.createElement('div');
+        row.className = 'bulk-field-row';
+        const inputId = 'bfi_' + field.key;
+        const cbId = 'bfcb_' + field.key;
+        let inputHtml = '';
+        if (field.type === 'select') {
+            inputHtml = `<select class="bulk-field-input" id="${inputId}" disabled>
+                ${field.options.map(o => `<option value="${o.v}">${o.l}</option>`).join('')}
+            </select>`;
+        } else {
+            inputHtml = `<input type="${field.type}" class="bulk-field-input" id="${inputId}" placeholder="${field.placeholder||''}" step="${field.step||'any'}" min="${field.min||''}" disabled>`;
+        }
+        row.innerHTML = `
+            <input type="checkbox" class="bulk-field-cb" id="${cbId}" onchange="toggleBulkField('${field.key}')">
+            <label class="bulk-field-label" for="${cbId}">${field.label}</label>
+            ${inputHtml}`;
+        container.appendChild(row);
+    });
+    document.getElementById('bulkEditOverlay').classList.add('active');
+}
+
+function toggleBulkField(key) {
+    const cb = document.getElementById('bfcb_' + key);
+    const input = document.getElementById('bfi_' + key);
+    input.disabled = !cb.checked;
+    if (cb.checked) input.focus();
+}
+
+function closeBulkEditModal() {
+    document.getElementById('bulkEditOverlay').classList.remove('active');
+}
+
+function applyBulkEdit() {
+    const updates = {};
+    _pageFields.forEach(field => {
+        const cb = document.getElementById('bfcb_' + field.key);
+        if (!cb || !cb.checked) return;
+        const input = document.getElementById('bfi_' + field.key);
+        let val = input.value;
+        if (field.type === 'number') val = parseFloat(val);
+        updates[field.key] = val;
+    });
+    if (!Object.keys(updates).length) { closeBulkEditModal(); return; }
+    selectedIndices.forEach(idx => {
+        const row = _currentData[idx];
+        if (!row) return;
+        Object.assign(row, updates);
+        // recalc benef if prix or cote changed
+        if ('prix_achat' in updates || 'cote' in updates) {
+            row.benef = Math.round((row.cote - row.prix_achat) * 100) / 100;
+        }
+    });
+    closeBulkEditModal();
+    applyFiltersAndSort();
+    clearSelection();
+}
+
+document.getElementById('bulkEditOverlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('bulkEditOverlay')) closeBulkEditModal();
+});
+
+
+// ── Toast ──
+window.showToast = function(msg, type) {
+    type = type || 'info';
+    var icons = {
+        success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg>',
+        error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg>',
+        info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>'
+    };
+    var t = document.createElement('div');
+    t.className = 'toast ' + type;
+    t.innerHTML = '<div class="toast-icon">' + (icons[type]||icons.info) + '</div><div>' + msg + '</div><div class="toast-progress"></div>';
+    document.getElementById('toastContainer').appendChild(t);
+    setTimeout(function() { t.classList.add('removing'); setTimeout(function() { t.remove(); }, 250); }, 4000);
+};
+
+// ── Confirm dialog ──
+window.showConfirm = function(title, body, onConfirm, confirmLabel, danger) {
+    confirmLabel = confirmLabel || 'Supprimer'; danger = danger !== false;
+    var overlay = document.getElementById('confirmOverlay');
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmBody').textContent = body;
+    var okBtn = document.getElementById('confirmOk');
+    okBtn.textContent = confirmLabel;
+    okBtn.style.background = danger ? 'var(--red)' : 'var(--blue)';
+    overlay.classList.add('active');
+    var close = function() { overlay.classList.remove('active'); };
+    document.getElementById('confirmCancel').onclick = close;
+    overlay.onclick = function(e) { if (e.target === overlay) close(); };
+    okBtn.onclick = function() { close(); onConfirm(); };
+};
+
+// ── Page transitions ──
+document.querySelectorAll('a[href]').forEach(function(a) {
+    var href = a.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('http')) return;
+    a.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.body.style.transition = 'opacity .16s, transform .16s';
+        document.body.style.opacity = '0';
+        document.body.style.transform = 'translateY(-5px)';
+        setTimeout(function() { window.location.href = href; }, 160);
+    });
+});
+
+
+    // ── Theme toggle ──
+    var SUN_SVG = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+    var MOON_SVG = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+
+    function applyTheme(dark) {
+        document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+        var icon = document.getElementById('themeIcon');
+        var label = document.getElementById('themeLabel');
+        var mIcon = document.getElementById('mobileThemeIcon');
+        if (icon) icon.innerHTML = dark ? SUN_SVG : MOON_SVG;
+        if (label) label.textContent = dark ? 'Mode clair' : 'Mode sombre';
+        if (mIcon) mIcon.innerHTML = dark ? SUN_SVG : MOON_SVG;
+    }
+
+    function toggleTheme() {
+        var dark = document.documentElement.getAttribute('data-theme') !== 'dark';
+        localStorage.setItem('theme', dark ? 'dark' : 'light');
+        applyTheme(dark);
+    }
+
+    (function() {
+        var saved = localStorage.getItem('theme');
+        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        applyTheme(saved ? saved === 'dark' : prefersDark);
+    })();
+
+</script>
+
+<!-- Supabase auth -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+(async function() {
+    const SUPABASE_URL = 'https://gikpqthgpzbsfadvltvt.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdpa3BxdGhncHpic2ZhZHZsdHZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzNjE2NTEsImV4cCI6MjA5NjkzNzY1MX0.-PAqol9IxvK2tdG9lqlPnybNIqUSgsbJokEYyx9kR0I';
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const { data: { user } } = await client.auth.getUser();
+    if (!user) { window.location.replace('/connexion?redirect=/dashboard/'); return; }
+    const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Investisseur';
+    const initial = name.charAt(0).toUpperCase();
+    const nameEl = document.getElementById('userName');
+    const avatarEl = document.getElementById('userAvatar');
+    if (nameEl) nameEl.textContent = name;
+    if (avatarEl) avatarEl.textContent = initial;
+    window.handleLogout = async function() {
+        await client.auth.signOut();
+        window.location.replace('/connexion');
+    };
+    client.auth.onAuthStateChange((event) => {
+        if (event === 'SIGNED_OUT') window.location.replace('/connexion');
+    });
+})();
+</script>
+</body>
+</html>
