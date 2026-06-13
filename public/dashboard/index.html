@@ -237,7 +237,7 @@
     })();
 </script>
 
-<!-- Supabase auth -->
+<!-- Supabase auth + stats dynamiques -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 (async function() {
@@ -270,6 +270,72 @@
             window.location.replace('/connexion');
         }
     });
+
+    // Charger les stats depuis toutes les tables
+    try {
+        const [
+            { data: cartes },
+            { data: pca },
+            { data: items },
+            { data: sets }
+        ] = await Promise.all([
+            client.from('cartes_unite').select('prix_achat, cote, carte, numero, serie, benef:cote'),
+            client.from('cartes_pca').select('prix_achat, cote, carte, numero, serie'),
+            client.from('items_scelles').select('prix_achat, cote, produit, serie'),
+            client.from('mastersets').select('prix_achat, cote, nom, serie'),
+        ]);
+
+        const allItems = [...(cartes||[]), ...(pca||[]), ...(items||[]), ...(sets||[])];
+        const totalInvesti = allItems.reduce((s, r) => s + (parseFloat(r.prix_achat) || 0), 0);
+        const totalCote = allItems.reduce((s, r) => s + (parseFloat(r.cote) || 0), 0);
+        const plusValue = totalCote - totalInvesti;
+        const fmt = n => new Intl.NumberFormat('fr-FR', {style:'currency', currency:'EUR'}).format(n);
+
+        const investEl = document.getElementById('cnt-invest');
+        const valueEl = document.getElementById('cnt-value');
+        const virtualEl = document.getElementById('cnt-virtual');
+
+        if (investEl) investEl.textContent = fmt(totalInvesti);
+        if (valueEl) valueEl.textContent = fmt(totalCote);
+        if (virtualEl) {
+            virtualEl.textContent = (plusValue >= 0 ? '+' : '') + fmt(plusValue);
+            virtualEl.className = 'stat-value ' + (plusValue >= 0 ? 'positive' : 'negative');
+        }
+
+        // Top performers : toutes tables confondues, triées par bénéfice décroissant
+        const allWithBenef = [
+            ...(cartes||[]).map(r => ({ nom: r.carte + ' ' + r.numero, cat: 'Unité · ' + (r.serie||''), benef: r.cote - r.prix_achat })),
+            ...(pca||[]).map(r => ({ nom: r.carte + ' ' + r.numero, cat: 'Gradée · ' + (r.serie||''), benef: r.cote - r.prix_achat })),
+            ...(items||[]).map(r => ({ nom: r.produit, cat: 'Scellé · ' + (r.serie||''), benef: r.cote - r.prix_achat })),
+            ...(sets||[]).map(r => ({ nom: r.nom, cat: 'Masterset · ' + (r.serie||''), benef: r.cote - r.prix_achat })),
+        ].sort((a, b) => b.benef - a.benef).slice(0, 5);
+
+        const perfList = document.querySelector('.performer-list');
+        if (perfList && allWithBenef.length) {
+            perfList.innerHTML = allWithBenef.map((p, i) => {
+                const gain = (p.benef >= 0 ? '+' : '') + fmt(p.benef);
+                const rankClass = i < 2 ? 'performer-rank top' : 'performer-rank';
+                return `<li class="performer-item">
+                    <span class="${rankClass}">${String(i+1).padStart(2,'0')}</span>
+                    <div class="performer-info">
+                        <div class="performer-name">${p.nom}</div>
+                        <div class="performer-cat">${p.cat}</div>
+                    </div>
+                    <span class="performer-gain">${gain}</span>
+                </li>`;
+            }).join('');
+        }
+
+        // Mise à jour du badge du graphique
+        const badge = document.querySelector('.panel-badge');
+        if (badge && totalInvesti > 0) {
+            const mult = (totalCote / totalInvesti).toFixed(1);
+            badge.textContent = `× ${mult} depuis l'entrée`;
+        }
+
+    } catch(e) {
+        console.error('Erreur chargement stats:', e);
+    }
 })();
 </script>
 </body>

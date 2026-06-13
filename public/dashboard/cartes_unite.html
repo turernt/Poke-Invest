@@ -189,7 +189,9 @@
         return 'other';
     }
 
-    let cartesData = [{"bloc":"?","serie":"?","carte":"ZEBLITZ","numero":"115/086","prix_achat":5.99,"cote":18.0,"benef":12.01},{"bloc":"Inconnu","serie":"Inconnue","carte":"FERMITE","numero":"150/086","prix_achat":5.99,"cote":9.0,"benef":3.01},{"bloc":"Inconnu","serie":"Inconnue","carte":"COUPENOTTE","numero":"145/086","prix_achat":5.99,"cote":8.0,"benef":2.01},{"bloc":"Inconnu","serie":"Inconnue","carte":"STEELIX","numero":"208/182","prix_achat":5.99,"cote":35.0,"benef":29.01},{"bloc":"Inconnu","serie":"Inconnue","carte":"EVOLI","numero":"PROMO 174","prix_achat":5.99,"cote":20.0,"benef":14.01},{"bloc":"MEGA EVOLUTION","serie":"HEROS TRANSCENDANTS","carte":"MEGA-BRUTALIBRE EX","numero":"283/217","prix_achat":5.99,"cote":45.0,"benef":39.01},{"bloc":"MEGA EVOLUTION","serie":"HEROS TRANSCENDANTS","carte":"FAVIANOS","numero":"288/217","prix_achat":5.99,"cote":50.0,"benef":44.01},{"bloc":"ECARLATE ET VIOLET","serie":"CELEBRATIONS (25 ANS)","carte":"LEVIATOR OBSCUR","numero":"08/82","prix_achat":5.99,"cote":20.0,"benef":14.01},{"bloc":"MEGA EVOLUTION","serie":"HEROS TRANSCENDANTS","carte":"STALGAMIN","numero":"227/217","prix_achat":5.99,"cote":5.0,"benef":-0.99},{"bloc":"ECARLATE ET VIOLET","serie":"151.0","carte":"RONFLEX (SCELLEE)","numero":"PROMO 051","prix_achat":33.0,"cote":40.0,"benef":7.0},{"bloc":"Inconnu","serie":"DESTINEE DE PALDEA","carte":"MIMIQUI (SCELLEE)","numero":"PROMO 075","prix_achat":14.0,"cote":15.0,"benef":1.0},{"bloc":"Inconnu","serie":"AVENTURES ENSEMBLE","carte":"ARTIKODIN","numero":"161/159","prix_achat":16.0,"cote":24.0,"benef":8.0},{"bloc":"Inconnu","serie":"AVENTURES ENSEMBLE","carte":"ARTIKODIN","numero":"161/160","prix_achat":16.0,"cote":24.0,"benef":8.0},{"bloc":"Inconnu","serie":"DESTINEE DE PALDEA","carte":"MIMIQUI","numero":"PROMO 075","prix_achat":9.5,"cote":10.0,"benef":0.5},{"bloc":"ECARLATE ET VIOLET","serie":"CELEBRATIONS (25 ANS)","carte":"CARCHACROCK","numero":"145/147","prix_achat":5.99,"cote":20.0,"benef":14.01},{"bloc":"ECARLATE ET VIOLET","serie":"CELEBRATIONS (25 ANS)","carte":"GROUDON","numero":"9/95","prix_achat":5.99,"cote":10.0,"benef":4.01},{"bloc":"ECARLATE ET VIOLET","serie":"CELEBRATIONS (25 ANS)","carte":"LEVIATOR OBSCUR","numero":"08/82","prix_achat":5.99,"cote":20.0,"benef":14.01},{"bloc":"ECARLATE ET VIOLET","serie":"151.0","carte":"KANGOUREX EX","numero":"190/165","prix_achat":5.99,"cote":15.0,"benef":9.01}];
+    let cartesData = [];
+    let _currentUser = null;
+    let _supabaseClient = null;
     let currentSort = {col:-1, asc:true};
 
     function renderTable(data){
@@ -250,8 +252,13 @@
         applyFiltersAndSort();
     }
 
-    function deleteItem(i){
-        showConfirm('Supprimer ?', 'Cette action est irréversible.', function() { cartesData.splice(i,1); applyFiltersAndSort(); showToast('Élément supprimé', 'success'); });
+    async function deleteItem(i){
+        showConfirm('Supprimer ?', 'Cette action est irréversible.', async function() {
+            const id = cartesData[i].id;
+            const { error } = await _supabaseClient.from('cartes_unite').delete().eq('id', id);
+            if (!error) { cartesData.splice(i,1); applyFiltersAndSort(); showToast('Élément supprimé', 'success'); }
+            else showToast('Erreur lors de la suppression', 'error');
+        });
     }
 
     function openModal(){
@@ -280,8 +287,10 @@
         document.getElementById('modalOverlay').classList.add('active');
     }
 
-    function handleFormSubmit(e){
+    async function handleFormSubmit(e){
         e.preventDefault();
+        const btn = document.getElementById('btnSubmitForm');
+        btn.disabled = true; btn.textContent = 'Enregistrement…';
         const carte = document.getElementById('formCarte').value;
         const numero = document.getElementById('formNumero').value;
         const bloc = document.getElementById('formBloc').value;
@@ -289,8 +298,18 @@
         const prix = parseFloat(document.getElementById('formPrix').value);
         const cote = parseFloat(document.getElementById('formCote').value);
         const idx = parseInt(document.getElementById('formItemIndex').value);
-        const item = {carte, numero, bloc, serie, prix_achat:prix, cote, benef:cote-prix};
-        if(idx===-1) cartesData.unshift(item); else Object.assign(cartesData[idx],item);
+        const payload = { user_id: _currentUser.id, carte, numero, bloc, serie, prix_achat: prix, cote };
+        if(idx===-1){
+            const { data, error } = await _supabaseClient.from('cartes_unite').insert(payload).select().single();
+            if (!error) cartesData.unshift({ ...data, benef: data.cote - data.prix_achat });
+            else { showToast('Erreur lors de l\'ajout', 'error'); btn.disabled=false; btn.textContent='Ajouter'; return; }
+        } else {
+            const id = cartesData[idx].id;
+            const { data, error } = await _supabaseClient.from('cartes_unite').update(payload).eq('id', id).select().single();
+            if (!error) Object.assign(cartesData[idx], { ...data, benef: data.cote - data.prix_achat });
+            else { showToast('Erreur lors de la modification', 'error'); btn.disabled=false; btn.textContent='Enregistrer'; return; }
+        }
+        btn.disabled=false;
         applyFiltersAndSort(); closeModal();
     }
 
@@ -330,6 +349,7 @@
 
             dataObj.cote = data.price;
             dataObj.benef = Math.round((data.price - dataObj.prix_achat) * 100) / 100;
+            if (dataObj.id) await _supabaseClient.from('cartes_unite').update({ cote: data.price }).eq('id', dataObj.id);
 
             btn.classList.add('success');
             btn.innerHTML = EBAY_ICON_SVG;
@@ -362,7 +382,7 @@
     let _currentView = 'list';
     let _lastGalleryData = [];
 
-    applyFiltersAndSort();
+    // Note: applyFiltersAndSort() est appelé après le chargement Supabase
 
     function setView(v) {
         _currentView = v;
@@ -784,8 +804,10 @@ function bulkDelete() {
     </div>`;
     document.body.appendChild(overlay);
     overlay.querySelector('#bcCancel').onclick = () => document.body.removeChild(overlay);
-    overlay.querySelector('#bcConfirm').onclick = () => {
+    overlay.querySelector('#bcConfirm').onclick = async () => {
         document.body.removeChild(overlay);
+        const ids = [...selectedIndices].map(i => _currentData[i]?.id).filter(Boolean);
+        if (ids.length) await _supabaseClient.from('cartes_unite').delete().in('id', ids);
         const sorted = [...selectedIndices].sort((a,b) => b-a);
         sorted.forEach(i => _currentData.splice(i, 1));
         selectedIndices.clear();
@@ -798,7 +820,6 @@ function bulkDelete() {
 async function bulkEbay() {
     const indices = [...selectedIndices];
     if (!indices.length) return;
-    const bar = document.getElementById('bulkBar');
     const prog = document.getElementById('bulkProgress');
     const progBar = document.getElementById('bulkProgressBar');
     prog.style.display = 'block';
@@ -813,6 +834,7 @@ async function bulkEbay() {
             if (!data.error && data.price !== null) {
                 row.cote = data.price;
                 row.benef = Math.round((data.price - row.prix_achat) * 100) / 100;
+                if (row.id) await _supabaseClient.from('cartes_unite').update({ cote: data.price }).eq('id', row.id);
             }
         } catch(e) {}
         done++;
@@ -969,21 +991,26 @@ document.querySelectorAll('a[href]').forEach(function(a) {
 
 </script>
 
-<!-- Supabase auth -->
+<!-- Supabase auth + data -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 (async function() {
     const SUPABASE_URL = 'https://gikpqthgpzbsfadvltvt.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdpa3BxdGhncHpic2ZhZHZsdHZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzNjE2NTEsImV4cCI6MjA5NjkzNzY1MX0.-PAqol9IxvK2tdG9lqlPnybNIqUSgsbJokEYyx9kR0I';
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    _supabaseClient = client;
+
     const { data: { user } } = await client.auth.getUser();
     if (!user) { window.location.replace('/connexion?redirect=/dashboard/'); return; }
+    _currentUser = user;
+
     const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Investisseur';
     const initial = name.charAt(0).toUpperCase();
     const nameEl = document.getElementById('userName');
     const avatarEl = document.getElementById('userAvatar');
     if (nameEl) nameEl.textContent = name;
     if (avatarEl) avatarEl.textContent = initial;
+
     window.handleLogout = async function() {
         await client.auth.signOut();
         window.location.replace('/connexion');
@@ -991,6 +1018,16 @@ document.querySelectorAll('a[href]').forEach(function(a) {
     client.auth.onAuthStateChange((event) => {
         if (event === 'SIGNED_OUT') window.location.replace('/connexion');
     });
+
+    // Charger les données depuis Supabase
+    try {
+        const { data: rows, error } = await client.from('cartes_unite').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        cartesData = (rows || []).map(r => ({ ...r, benef: r.cote - r.prix_achat }));
+    } catch(e) {
+        showToast('Erreur de chargement des données', 'error');
+    }
+    applyFiltersAndSort();
 })();
 </script>
 </body>
