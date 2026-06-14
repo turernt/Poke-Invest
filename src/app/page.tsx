@@ -423,9 +423,9 @@ export default function Home() {
                 {
                   title: "Légal",
                   links: [
-                    { label: "Confidentialité", href: "#" },
-                    { label: "CGU",             href: "#" },
-                    { label: "Contact",         href: "#" },
+                    { label: "Confidentialité", href: "/confidentialite" },
+                    { label: "CGU",             href: "/cgu" },
+                    { label: "Contact",         href: "mailto:contact@pokeinvest.fr" },
                   ],
                 },
               ].map(({ title, links }) => (

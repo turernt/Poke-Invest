@@ -6,7 +6,8 @@ export async function GET(request: NextRequest) {
 
   const EBAY_TOKEN = process.env.EBAY_OAUTH_TOKEN;
   if (!EBAY_TOKEN) {
-    return NextResponse.json({ error: "eBay token not configured" }, { status: 500 });
+    const ebaySearchUrl = `https://www.ebay.fr/sch/i.html?_nkw=${encodeURIComponent(q)}&_sop=15`;
+    return NextResponse.json({ not_configured: true, fallback_url: ebaySearchUrl });
   }
 
   try {
