@@ -32,18 +32,6 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  async rewrites() {
-    return [
-      // Serve dashboard HTML files via Next.js rewrites so the CSS path is correct
-      { source: "/dashboard", destination: "/dashboard/index.html" },
-      { source: "/dashboard/", destination: "/dashboard/index.html" },
-      { source: "/dashboard/cartes_unite", destination: "/dashboard/cartes_unite.html" },
-      { source: "/dashboard/cartes_pca", destination: "/dashboard/cartes_pca.html" },
-      { source: "/dashboard/items_scelles", destination: "/dashboard/items_scelles.html" },
-      { source: "/dashboard/mastersets", destination: "/dashboard/mastersets.html" },
-      { source: "/dashboard/profile", destination: "/dashboard/profile.html" },
-    ];
-  },
 };
 
 export default nextConfig;
