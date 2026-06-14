@@ -36,25 +36,43 @@ interface Carte {
   imgUrl?: string | null;
 }
 
+interface TcgCard {
+  id: string;
+  name: string;
+  number: string;
+  set: { name: string };
+  images: { small: string };
+}
+
 const IMG_CACHE: Record<string, string | null> = {};
 
 async function fetchCardImage(name: string, numero: string): Promise<string | null> {
   const key = `${name}|${numero}`;
   if (key in IMG_CACHE) return IMG_CACHE[key];
   try {
-    const res = await fetch(`/api/ebay-price?q=${encodeURIComponent(name + " " + numero + " pokemon card")}`);
-    // Use pokemontcg API directly (CSP now allows it)
-    const tcg = await fetch(`https://api.pokemontcg.io/v2/cards?q=name:${encodeURIComponent(name)}&pageSize=8`);
+    const tcg = await fetch(`https://api.pokemontcg.io/v2/cards?q=name:${encodeURIComponent(name)}&pageSize=10`);
     const data = await tcg.json();
-    const cards = data.data || [];
-    let match = cards.find((c: { number?: string }) => c.number && numero.toLowerCase().includes(c.number.toLowerCase()));
-    if (!match) match = cards[0];
-    const url = match ? (match.images?.small ?? null) : null;
+    const cards: TcgCard[] = data.data || [];
+    const num = numero.split("/")[0];
+    let match = cards.find(c => c.number === num) ?? cards[0] ?? null;
+    const url = match?.images?.small ?? null;
     IMG_CACHE[key] = url;
     return url;
   } catch {
     IMG_CACHE[key] = null;
     return null;
+  }
+}
+
+// Autocomplete search via pokemontcg.io
+async function searchTcgCards(query: string): Promise<TcgCard[]> {
+  if (query.length < 2) return [];
+  try {
+    const res = await fetch(`https://api.pokemontcg.io/v2/cards?q=name:${encodeURIComponent(query + "*")}&pageSize=8&select=id,name,number,set,images`);
+    const data = await res.json();
+    return data.data || [];
+  } catch {
+    return [];
   }
 }
 
@@ -75,6 +93,12 @@ export default function CartesUnitePage() {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ carte: "", numero: "", bloc: "ECARLATE ET VIOLET", serie: "", prix: "", cote: "" });
   const [saving, setSaving] = useState(false);
+
+  // Autocomplete
+  const [suggestions, setSuggestions] = useState<TcgCard[]>([]);
+  const [scanImg, setScanImg] = useState<string | null>(null);
+  const autocompleteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [showSugg, setShowSugg] = useState(false);
 
   // eBay
   const [ebayLoading, setEbayLoading] = useState<Set<string>>(new Set());
@@ -102,6 +126,31 @@ export default function CartesUnitePage() {
     });
   }, [view, data]);
 
+  // Autocomplete on carte name change
+  const handleCarteInput = (val: string) => {
+    setForm(f => ({ ...f, carte: val }));
+    setScanImg(null);
+    if (autocompleteTimer.current) clearTimeout(autocompleteTimer.current);
+    if (val.length < 2) { setSuggestions([]); setShowSugg(false); return; }
+    autocompleteTimer.current = setTimeout(async () => {
+      const results = await searchTcgCards(val);
+      setSuggestions(results);
+      setShowSugg(results.length > 0);
+    }, 300);
+  };
+
+  const pickSuggestion = (card: TcgCard) => {
+    setForm(f => ({
+      ...f,
+      carte: card.name,
+      numero: card.number,
+      serie: card.set.name.toUpperCase(),
+    }));
+    setScanImg(card.images?.small ?? null);
+    setSuggestions([]);
+    setShowSugg(false);
+  };
+
   // Filter + sort
   const filtered = data.filter(r =>
     `${r.carte} ${r.numero} ${r.serie} ${r.bloc}`.toLowerCase().includes(search.toLowerCase())
@@ -122,12 +171,18 @@ export default function CartesUnitePage() {
   const openAdd = () => {
     setEditId(null);
     setForm({ carte: "", numero: "", bloc: "ECARLATE ET VIOLET", serie: "", prix: "", cote: "" });
+    setScanImg(null);
+    setSuggestions([]);
+    setShowSugg(false);
     setModal(true);
   };
 
   const openEdit = (row: Carte) => {
     setEditId(row.id);
     setForm({ carte: row.carte, numero: row.numero, bloc: row.bloc, serie: row.serie, prix: String(row.prix_achat), cote: String(row.cote) });
+    setScanImg(row.imgUrl ?? null);
+    setSuggestions([]);
+    setShowSugg(false);
     setModal(true);
   };
 
@@ -338,21 +393,52 @@ export default function CartesUnitePage() {
               </button>
             </div>
             <form onSubmit={handleSubmit}>
-              <div className="form-row wide">
-                <div className="form-group">
-                  <label>Nom de la carte</label>
-                  <input value={form.carte} onChange={e => setForm(f => ({ ...f, carte: e.target.value }))} placeholder="Ex: Dracaufeu, Pikachu VMAX…" />
+              {/* Scan preview + carte name with autocomplete */}
+              <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                {scanImg && (
+                  <div className="scan-preview">
+                    <img src={scanImg} alt="preview" />
+                  </div>
+                )}
+                <div style={{ flex: 1, position: "relative" }}>
+                  <div className="form-group">
+                    <label>Nom de la carte</label>
+                    <input
+                      value={form.carte}
+                      onChange={e => handleCarteInput(e.target.value)}
+                      onBlur={() => setTimeout(() => setShowSugg(false), 150)}
+                      onFocus={() => suggestions.length > 0 && setShowSugg(true)}
+                      placeholder="Ex: Dracaufeu, Pikachu VMAX…"
+                      autoComplete="off"
+                    />
+                    {showSugg && suggestions.length > 0 && (
+                      <ul className="scan-suggestions">
+                        {suggestions.map(c => (
+                          <li key={c.id} onMouseDown={() => pickSuggestion(c)}>
+                            {c.images?.small && <img src={c.images.small} alt={c.name} className="sugg-thumb" />}
+                            <div>
+                              <div className="sugg-name">{c.name}</div>
+                              <div className="sugg-meta">{c.number} · {c.set.name}</div>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </div>
+              </div>
+
+              <div className="form-row wide">
                 <div className="form-group">
                   <label>Numéro</label>
                   <input value={form.numero} onChange={e => setForm(f => ({ ...f, numero: e.target.value }))} placeholder="004/165" />
                 </div>
-              </div>
-              <div className="form-group">
-                <label>Bloc</label>
-                <select value={form.bloc} onChange={e => setForm(f => ({ ...f, bloc: e.target.value }))}>
-                  {BLOCS.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
-                </select>
+                <div className="form-group">
+                  <label>Bloc</label>
+                  <select value={form.bloc} onChange={e => setForm(f => ({ ...f, bloc: e.target.value }))}>
+                    {BLOCS.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
+                  </select>
+                </div>
               </div>
               <div className="form-group">
                 <label>Série / Extension</label>
