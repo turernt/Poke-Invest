@@ -1,16 +1,26 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import indexHtml from "../../../dashboard-pages/index";
+import cartesUniteHtml from "../../../dashboard-pages/cartes_unite";
+import cartesPcaHtml from "../../../dashboard-pages/cartes_pca";
+import itemsScelles from "../../../dashboard-pages/items_scelles";
+import mastersetsHtml from "../../../dashboard-pages/mastersets";
+import profileHtml from "../../../dashboard-pages/profile";
+import styleCss from "../../../dashboard-pages/style";
 
-const DIR = path.join(process.cwd(), "src/dashboard-pages");
+const CSS_LINK = '<link rel="stylesheet" href="/dashboard/style.css">';
+const INLINE_STYLE = `<style>\n${styleCss}\n</style>`;
 
-const SLUG_TO_FILE: Record<string, string> = {
-  "": "index.html",
-  "cartes_unite": "cartes_unite.html",
-  "cartes_pca": "cartes_pca.html",
-  "items_scelles": "items_scelles.html",
-  "mastersets": "mastersets.html",
-  "profile": "profile.html",
+function inlineCss(html: string): string {
+  return html.replace(CSS_LINK, INLINE_STYLE);
+}
+
+const PAGES: Record<string, string> = {
+  "": inlineCss(indexHtml),
+  "cartes_unite": inlineCss(cartesUniteHtml),
+  "cartes_pca": inlineCss(cartesPcaHtml),
+  "items_scelles": inlineCss(itemsScelles),
+  "mastersets": inlineCss(mastersetsHtml),
+  "profile": inlineCss(profileHtml),
 };
 
 export async function GET(
@@ -19,27 +29,10 @@ export async function GET(
 ) {
   const { slug } = await params;
   const key = (slug ?? []).join("/");
-  const filename = SLUG_TO_FILE[key];
+  const html = PAGES[key];
 
-  if (!filename) {
+  if (!html) {
     return new NextResponse("Not found", { status: 404 });
-  }
-
-  const filePath = path.join(DIR, filename);
-  if (!fs.existsSync(filePath)) {
-    return new NextResponse("Not found", { status: 404 });
-  }
-
-  let html = fs.readFileSync(filePath, "utf-8");
-
-  // Inline CSS to avoid any static-file serving issues
-  const cssPath = path.join(DIR, "style.css");
-  if (fs.existsSync(cssPath)) {
-    const css = fs.readFileSync(cssPath, "utf-8");
-    html = html.replace(
-      '<link rel="stylesheet" href="/dashboard/style.css">',
-      `<style>\n${css}\n</style>`
-    );
   }
 
   return new NextResponse(html, {
