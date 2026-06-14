@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
-const DIR = path.join(process.cwd(), "public/dashboard");
+const DIR = path.join(process.cwd(), "src/dashboard-pages");
 
 const SLUG_TO_FILE: Record<string, string> = {
   "": "index.html",
