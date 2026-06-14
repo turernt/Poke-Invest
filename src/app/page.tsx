@@ -1,12 +1,19 @@
 "use client";
-import { useRef } from "react";
-import { useScroll, useTransform, motion } from "framer-motion";
-import { TrendingUp, Shield, BarChart3, Zap, ChevronRight, ArrowRight, CheckCircle2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { useScroll, useTransform, motion, AnimatePresence } from "framer-motion";
+import { TrendingUp, Shield, BarChart3, Zap, ChevronRight, ArrowRight, CheckCircle2, Menu, X } from "lucide-react";
 import Link from "next/link";
 import DisplayCards from "@/components/ui/display-cards";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 import { TextEffect } from "@/components/ui/text-effect";
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
+
+const NAV_LINKS = [
+  { label: "Marché",    href: "#fonctionnalites" },
+  { label: "Portfolio", href: "#fonctionnalites" },
+  { label: "Analyses",  href: "#fonctionnalites" },
+  { label: "Cotation",  href: "#fonctionnalites" },
+];
 
 const STATS = [
   { value: "2,4 Mrd €+", label: "Valeur analysée" },
@@ -18,6 +25,7 @@ const STATS = [
 const PERKS = ["Sans carte bancaire", "Accès immédiat", "Résiliation libre"];
 
 export default function Home() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -44,36 +52,76 @@ export default function Home() {
           </div>
           <span className="font-bold text-base tracking-tight">PokeInvest</span>
         </Link>
+
+        {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-7 text-sm text-white/45" aria-label="Sections">
-          {[
-            { label: "Marché", href: "#" },
-            { label: "Portfolio", href: "#" },
-            { label: "Analyses", href: "#" },
-            { label: "Cotation", href: "#" },
-          ].map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              className="hover:text-white transition-colors duration-200"
-            >
+          {NAV_LINKS.map((item) => (
+            <a key={item.label} href={item.href} className="hover:text-white transition-colors duration-200">
               {item.label}
             </a>
           ))}
         </nav>
+
         <div className="flex items-center gap-3">
-          <Link
-            href="/connexion"
-            className="text-white/45 text-sm hover:text-white/80 transition-colors hidden sm:block"
-          >
+          <Link href="/connexion" className="text-white/45 text-sm hover:text-white/80 transition-colors hidden sm:block">
             Se connecter
           </Link>
-          <Link href="/inscription" aria-label="Créer un compte gratuit">
+          <Link href="/inscription" aria-label="Créer un compte gratuit" className="hidden sm:block">
             <LiquidButton size="sm" className="text-yellow-300 font-semibold">
               Commencer
             </LiquidButton>
           </Link>
+          {/* Burger — mobile only */}
+          <button
+            className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg text-white/60 hover:text-white hover:bg-white/[0.07] transition-colors"
+            onClick={() => setMobileMenuOpen((o) => !o)}
+            aria-label={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            aria-expanded={mobileMenuOpen}
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
       </nav>
+
+      {/* ── Mobile menu ─────────────────────────────── */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="fixed top-[65px] left-0 right-0 z-40 bg-black/95 backdrop-blur-xl border-b border-white/[0.07] md:hidden"
+          >
+            <nav className="flex flex-col px-6 py-4 gap-1" aria-label="Menu mobile">
+              {NAV_LINKS.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-white/55 text-sm py-3 border-b border-white/[0.06] hover:text-white transition-colors"
+                >
+                  {item.label}
+                </a>
+              ))}
+              <Link
+                href="/connexion"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-white/55 text-sm py-3 border-b border-white/[0.06] hover:text-white transition-colors"
+              >
+                Se connecter
+              </Link>
+              <div className="pt-3 pb-1">
+                <Link href="/inscription" onClick={() => setMobileMenuOpen(false)}>
+                  <LiquidButton size="sm" className="text-yellow-300 font-semibold w-full justify-center">
+                    Commencer
+                  </LiquidButton>
+                </Link>
+              </div>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Hero ────────────────────────────────────── */}
       <section ref={heroRef} className="relative h-[220vh]" aria-label="Présentation">
@@ -162,7 +210,7 @@ export default function Home() {
       </section>
 
       {/* ── Stats ───────────────────────────────────── */}
-      <section aria-label="Chiffres clés" className="border-y border-white/[0.07] bg-zinc-950/60">
+      <section id="stats" aria-label="Chiffres clés" className="border-y border-white/[0.07] bg-zinc-950/60">
         <div className="max-w-4xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 divide-x divide-white/[0.06]">
           {STATS.map((s, i) => (
             <motion.div
@@ -183,7 +231,7 @@ export default function Home() {
       </section>
 
       {/* ── Features ────────────────────────────────── */}
-      <section aria-label="Fonctionnalités" className="py-24 px-6 overflow-hidden relative">
+      <section id="fonctionnalites" aria-label="Fonctionnalités" className="py-24 px-6 overflow-hidden relative">
         <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-zinc-950/60 to-transparent pointer-events-none" aria-hidden="true" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[480px] h-px bg-gradient-to-r from-transparent via-yellow-400/12 to-transparent" aria-hidden="true" />
 
@@ -357,27 +405,27 @@ export default function Home() {
                 {
                   title: "Produit",
                   links: [
-                    { label: "Marché", href: "#" },
-                    { label: "Portfolio", href: "#" },
-                    { label: "Analyses", href: "#" },
-                    { label: "Alertes", href: "#" },
+                    { label: "Marché",    href: "#fonctionnalites" },
+                    { label: "Portfolio", href: "#fonctionnalites" },
+                    { label: "Analyses",  href: "#fonctionnalites" },
+                    { label: "Alertes",   href: "#fonctionnalites" },
                   ],
                 },
                 {
                   title: "Cotation",
                   links: [
-                    { label: "PSA", href: "#" },
-                    { label: "BGS", href: "#" },
-                    { label: "CGC", href: "#" },
-                    { label: "Estimation IA", href: "#" },
+                    { label: "PSA",           href: "#fonctionnalites" },
+                    { label: "BGS",           href: "#fonctionnalites" },
+                    { label: "CGC",           href: "#fonctionnalites" },
+                    { label: "Estimation IA", href: "#fonctionnalites" },
                   ],
                 },
                 {
                   title: "Légal",
                   links: [
                     { label: "Confidentialité", href: "#" },
-                    { label: "CGU", href: "#" },
-                    { label: "Contact", href: "#" },
+                    { label: "CGU",             href: "#" },
+                    { label: "Contact",         href: "#" },
                   ],
                 },
               ].map(({ title, links }) => (

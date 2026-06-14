@@ -32,6 +32,16 @@ function ConnexionForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!form.email.trim()) {
+      setError("Veuillez entrer votre adresse e-mail.");
+      return;
+    }
+    if (!form.password) {
+      setError("Veuillez entrer votre mot de passe.");
+      return;
+    }
+
     setLoading(true);
 
     const { error: signInError } = await supabase.auth.signInWithPassword({

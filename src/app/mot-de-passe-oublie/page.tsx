@@ -23,6 +23,12 @@ export default function MotDePasseOublie() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!email.trim()) {
+      setError("Veuillez entrer votre adresse e-mail.");
+      return;
+    }
+
     setLoading(true);
 
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {

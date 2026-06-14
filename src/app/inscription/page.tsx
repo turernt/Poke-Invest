@@ -41,6 +41,20 @@ export default function Inscription() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!form.name.trim()) {
+      setError("Veuillez entrer votre prénom et nom.");
+      return;
+    }
+    if (!form.email.trim()) {
+      setError("Veuillez entrer votre adresse e-mail.");
+      return;
+    }
+    if (form.password.length < 8) {
+      setError("Le mot de passe doit contenir au moins 8 caractères.");
+      return;
+    }
+
     setLoading(true);
 
     const { data, error: signUpError } = await supabase.auth.signUp({
@@ -53,7 +67,11 @@ export default function Inscription() {
     });
 
     if (signUpError) {
-      setError(signUpError.message);
+      if (signUpError.status === 429 || signUpError.message.toLowerCase().includes("rate")) {
+        setError("Trop de tentatives. Veuillez patienter quelques minutes avant de réessayer.");
+      } else {
+        setError(signUpError.message);
+      }
       setLoading(false);
       return;
     }
