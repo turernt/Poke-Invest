@@ -76,20 +76,12 @@ export function Sidebar() {
         })}
 
         <div className="nav-section" style={{ marginTop: 4 }}>Outils</div>
-        <a
-          href="#"
-          onClick={e => e.preventDefault()}
-          style={{ opacity: 0.5, cursor: "not-allowed", pointerEvents: "none" }}
-          aria-disabled="true"
-        >
+        <Link href="/dashboard/referentiel" className={pathname.startsWith("/dashboard/referentiel") ? "active" : ""}>
           <NavIcon>
             <><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></>
           </NavIcon>
           Référentiel Séries
-          <span style={{ marginLeft: "auto", fontSize: 9, fontWeight: 700, letterSpacing: ".04em", background: "rgba(232,93,38,.15)", color: "#e85d26", border: "1px solid rgba(232,93,38,.3)", borderRadius: 4, padding: "1px 5px" }}>
-            Bientôt
-          </span>
-        </a>
+        </Link>
       </nav>
 
       <div className="sidebar-footer">
