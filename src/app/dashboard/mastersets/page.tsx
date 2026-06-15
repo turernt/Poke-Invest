@@ -178,6 +178,19 @@ export default function MastersetsPage() {
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher…" aria-label="Rechercher" />
         </div>
         <div className="bar-right">
+          <button
+            onClick={() => {
+              const rows = [["Nom","Série","Cartes total","Cartes obtenues","Achat (€)","Cote (€)","Plus-value (€)"], ...sorted.map(r => [r.nom, r.serie, r.cartes_total ?? "", r.cartes_obtenues ?? "", r.prix_achat, r.cote, r.benef])];
+              const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+              const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" })); a.download = "mastersets.csv"; a.click();
+            }}
+            className="act-btn"
+            title="Exporter CSV"
+            style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", fontSize: 12, fontWeight: 600 }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: 14, height: 14 }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            CSV
+          </button>
           <span className="item-count">{sorted.length} masterset{sorted.length !== 1 ? "s" : ""}</span>
         </div>
       </div>
