@@ -24,33 +24,21 @@ const CONDITIONS = [
   { value: "HP", label: "Très Usée (HP)" },
 ];
 
-const SERIES = [
-  "151", "30th Celebration", "Aquapolis", "Arceus", "Ascended Heroes",
-  "Ancient Roar", "Battle Styles", "Base Set", "Black & White", "Black Bolt",
-  "Boundaries Crossed", "Breakthrough", "BREAKpoint", "Brilliant Stars",
-  "Burning Shadows", "Celebrations", "Celestial Storm", "Chaos Rising",
-  "Chilling Reign", "Cosmic Eclipse", "Crimson Invasion", "Crown Zenith",
-  "Crystal Guardians", "Dark Explorers", "Darkness Ablaze", "Delta Reign",
-  "Delta Species", "Destined Rivals", "Diamond & Pearl", "Dragon Frontiers",
-  "Dragons Exalted", "Emerald", "Emerging Powers", "Evolutions", "Evolving Skies",
-  "Expedition", "Fates Collide", "Fire Red Leaf Green", "Flashfire",
-  "Forbidden Light", "Fossil", "Furious Fists", "Fusion Strike", "Generations",
-  "Great Encounters", "Guardians Rising", "Gym Challenge", "Gym Heroes",
-  "HeartGold & SoulSilver", "Hidden Legends", "Holon Phantoms", "Journey Together",
-  "Jungle", "Legend Maker", "Legends Awakened", "Lost Origin", "Lost Thunder",
-  "Majestic Dawn", "Mysterious Treasures", "Neo Destiny", "Neo Discovery",
-  "Neo Genesis", "Neo Revelation", "Next Destinies", "Noble Victories",
-  "Obsidian Flames", "Paldea Evolved", "Paldean Fates", "Paradox Rift",
-  "Perfect Order", "Phantom Forces", "Pitch Black", "Plasma Blast", "Plasma Freeze",
-  "Plasma Storm", "Platinum", "Pokémon GO", "Power Keepers", "Primal Clash",
-  "Prismatic Evolutions", "Rebel Clash", "Rising Rivals", "Roaring Skies",
-  "Ruby & Sapphire", "Sandstorm", "Scarlet & Violet Base", "Secret Wonders",
-  "Silver Tempest", "Skyridge", "Steam Siege", "Stellar Crown", "Stormfront",
-  "Sun & Moon", "Supreme Victors", "Surging Sparks", "Sword & Shield",
-  "Team Magma vs Team Aqua", "Team Up", "Temporal Forces", "Triumphant",
-  "Twilight Masquerade", "Ultra Prism", "Unbroken Bonds", "Undaunted",
-  "Unified Minds", "Unleashed", "Unseen Forces", "Vivid Voltage", "White Flare", "XY"
-];
+const SERIES_BY_BLOC: Record<string, string[]> = {
+  "BASE SET ERA": ["Base Set", "Jungle", "Fossil"],
+  "NEO ERA": ["Neo Genesis", "Neo Discovery", "Neo Revelation", "Neo Destiny"],
+  "GYM ERA": ["Gym Heroes", "Gym Challenge"],
+  "E-CARD ERA": ["Expedition", "Aquapolis", "Skyridge"],
+  "HOLON ERA": ["Ruby & Sapphire", "Sandstorm", "Fire Red Leaf Green", "Team Magma vs Team Aqua", "Hidden Legends", "Emerald", "Unseen Forces", "Delta Species", "Legend Maker", "Holon Phantoms", "Crystal Guardians", "Dragon Frontiers", "Power Keepers"],
+  "DIAMANT ET PERLE": ["Diamond & Pearl", "Mysterious Treasures", "Secret Wonders", "Great Encounters", "Majestic Dawn", "Legends Awakened", "Stormfront", "Platinum", "Rising Rivals", "Supreme Victors", "Arceus"],
+  "HEARTGOLD ET SOULSILVER": ["HeartGold & SoulSilver", "Unleashed", "Undaunted", "Triumphant"],
+  "NOIR ET BLANC": ["Black & White", "Emerging Powers", "Noble Victories", "Next Destinies", "Dark Explorers", "Dragons Exalted", "Boundaries Crossed", "Plasma Storm", "Plasma Freeze", "Plasma Blast"],
+  "XY": ["XY", "Flashfire", "Furious Fists", "Phantom Forces", "Primal Clash", "Roaring Skies", "Ancient Roar", "Breakthrough", "BREAKpoint", "Generations", "Fates Collide", "Steam Siege", "Evolutions"],
+  "SOLEIL ET LUNE": ["Sun & Moon", "Guardians Rising", "Burning Shadows", "Crimson Invasion", "Ultra Prism", "Forbidden Light", "Celestial Storm", "Lost Thunder", "Team Up", "Unbroken Bonds", "Unified Minds", "Cosmic Eclipse"],
+  "EPEE ET BOUCLIER": ["Sword & Shield", "Rebel Clash", "Darkness Ablaze", "Vivid Voltage", "Battle Styles", "Chilling Reign", "Evolving Skies", "Fusion Strike", "Celebrations", "Brilliant Stars", "Pokémon GO", "Lost Origin", "Silver Tempest", "Crown Zenith"],
+  "ECARLATE ET VIOLET": ["Scarlet & Violet Base", "Obsidian Flames", "Paldea Evolved", "151", "Paradox Rift", "Twilight Masquerade", "Stellar Crown", "Surging Sparks", "Temporal Forces", "Paldean Fates", "Prismatic Evolutions", "Journey Together", "Destined Rivals", "Black Bolt", "White Flare"],
+  "MEGA EVOLUTION": ["Ascended Heroes", "Perfect Order", "Chaos Rising", "Pitch Black", "30th Celebration", "Delta Reign"],
+};
 
 const SEARCH_CACHE: Record<string, TcgCard[]> = {};
 
@@ -603,7 +591,7 @@ export default function CartesUnitePage() {
                   <label>Série / Extension *</label>
                   <select value={form.serie} onChange={e => setForm(f => ({ ...f, serie: e.target.value }))}>
                     <option value="">Sélectionner une série…</option>
-                    {SERIES.map(s => <option key={s} value={s}>{s}</option>)}
+                    {(SERIES_BY_BLOC[form.bloc] || []).map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
               </div>
