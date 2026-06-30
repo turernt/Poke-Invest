@@ -7,14 +7,31 @@ import { getSupabaseBrowser } from "@/lib/supabase-browser";
 const fmt = (n: number) =>
   new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
 
-const BLOCS = [
-  { value: "ECARLATE ET VIOLET", label: "Écarlate et Violet" },
-  { value: "EPEE ET BOUCLIER", label: "Épée et Bouclier" },
-  { value: "SOLEIL ET LUNE", label: "Soleil et Lune" },
-  { value: "XY", label: "XY" },
-  { value: "MEGA EVOLUTION", label: "Mega Evolution" },
-  { value: "Inconnu", label: "Autre / Inconnu" },
-];
+const BLOCS_LABELS: Record<string, { FR: string; EN: string }> = {
+  "ECARLATE ET VIOLET": { FR: "Écarlate et Violet", EN: "Scarlet & Violet" },
+  "EPEE ET BOUCLIER": { FR: "Épée et Bouclier", EN: "Sword & Shield" },
+  "SOLEIL ET LUNE": { FR: "Soleil et Lune", EN: "Sun & Moon" },
+  "XY": { FR: "XY", EN: "XY" },
+  "MEGA EVOLUTION": { FR: "Méga-Évolution", EN: "Mega Evolution" },
+  "BASE SET ERA": { FR: "Ère Base Set", EN: "Base Set Era" },
+  "NEO ERA": { FR: "Ère Neo", EN: "Neo Era" },
+  "GYM ERA": { FR: "Ère Gym", EN: "Gym Era" },
+  "E-CARD ERA": { FR: "Ère E-Card", EN: "E-Card Era" },
+  "HOLON ERA": { FR: "Ère Holon", EN: "Holon Era" },
+  "DIAMANT ET PERLE": { FR: "Diamant et Perle", EN: "Diamond & Pearl" },
+  "HEARTGOLD ET SOULSILVER": { FR: "HeartGold et SoulSilver", EN: "HeartGold & SoulSilver" },
+  "NOIR ET BLANC": { FR: "Noir et Blanc", EN: "Black & White" },
+  "Inconnu": { FR: "Autre / Inconnu", EN: "Other / Unknown" },
+};
+
+const getBlocLabel = (bloc: string, lang: "FR" | "EN") => {
+  return BLOCS_LABELS[bloc]?.[lang] || bloc;
+};
+
+const BLOCS = Object.keys(BLOCS_LABELS).map(value => ({
+  value,
+  label: BLOCS_LABELS[value].FR
+}));
 
 const CERTIFICATIONS = [
   { value: "PSA", label: "PSA" },
@@ -91,6 +108,7 @@ export default function CartesPcaPage() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState({ col: -1, asc: true });
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [language, setLanguage] = useState<"FR" | "EN">("FR");
   const [modal, setModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ carte: "", numero: "", bloc: "ECARLATE ET VIOLET", serie: "", note: "", prix: "", cote: "", certification: "", grade: "", cert_number: "" });
@@ -107,6 +125,7 @@ export default function CartesPcaPage() {
 
   const load = useCallback(async () => {
     if (!user) return;
+    setLanguage((user.user_metadata?.language as "FR" | "EN") || "FR");
     const { data: rows } = await supabase.from("cartes_pca").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
     setData((rows ?? []).map((r: Omit<Carte, "benef">) => ({ ...r, benef: (r.cote ?? 0) - (r.prix_achat ?? 0) })));
   }, [user, supabase]);
@@ -392,7 +411,7 @@ export default function CartesPcaPage() {
                 <div className="form-group">
                   <label>Bloc</label>
                   <select value={form.bloc} onChange={e => setForm(f => ({ ...f, bloc: e.target.value }))}>
-                    {BLOCS.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
+                    {BLOCS.map(b => <option key={b.value} value={b.value}>{getBlocLabel(b.value, language)}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
