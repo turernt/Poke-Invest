@@ -75,7 +75,7 @@ export default function CartesPcaPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [modal, setModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ carte: "", numero: "", bloc: "ECARLATE ET VIOLET", serie: "", note: "", prix: "", cote: "" });
+  const [form, setForm] = useState({ carte: "", numero: "", bloc: "ECARLATE ET VIOLET", serie: "", note: "", prix: "", cote: "", certification: "", grade: "", cert_number: "" });
   const [saving, setSaving] = useState(false);
   const [ebayLoading, setEbayLoading] = useState<Set<string>>(new Set());
 
@@ -133,14 +133,14 @@ export default function CartesPcaPage() {
 
   const openAdd = () => {
     setEditId(null);
-    setForm({ carte: "", numero: "", bloc: "ECARLATE ET VIOLET", serie: "", note: "", prix: "", cote: "" });
+    setForm({ carte: "", numero: "", bloc: "ECARLATE ET VIOLET", serie: "", note: "", prix: "", cote: "", certification: "", grade: "", cert_number: "" });
     setScanImg(null); setSuggestions([]); setShowSugg(false);
     setModal(true);
   };
 
   const openEdit = (row: Carte) => {
     setEditId(row.id);
-    setForm({ carte: row.carte, numero: row.numero, bloc: row.bloc, serie: row.serie, note: row.note || "", prix: String(row.prix_achat), cote: String(row.cote) });
+    setForm({ carte: row.carte, numero: row.numero, bloc: row.bloc, serie: row.serie, note: row.note || "", prix: String(row.prix_achat), cote: String(row.cote), certification: row.certification || "", grade: row.grade ? String(row.grade) : "", cert_number: row.cert_number || "" });
     setScanImg(null); setSuggestions([]); setShowSugg(false);
     setModal(true);
   };
@@ -150,14 +150,17 @@ export default function CartesPcaPage() {
     const carte = form.carte.trim(), numero = form.numero.trim();
     const serie = form.serie.trim().toUpperCase();
     const prix = parseFloat(form.prix), cote = parseFloat(form.cote);
+    const grade = form.grade ? parseInt(form.grade) : null;
+
     if (!carte) { showToast("Le nom de la carte est requis", "error"); return; }
     if (!numero) { showToast("Le numéro est requis", "error"); return; }
     if (!serie) { showToast("La série est requise", "error"); return; }
     if (isNaN(prix) || prix < 0) { showToast("Prix d'achat invalide", "error"); return; }
     if (isNaN(cote) || cote < 0) { showToast("Cote invalide", "error"); return; }
+    if (grade && (grade < 1 || grade > 10)) { showToast("Le grade doit être entre 1 et 10", "error"); return; }
 
     setSaving(true);
-    const payload = { user_id: user!.id, carte, numero, bloc: form.bloc, serie, note: form.note.trim(), prix_achat: prix, cote };
+    const payload = { user_id: user!.id, carte, numero, bloc: form.bloc, serie, note: form.note.trim(), prix_achat: prix, cote, certification: form.certification || null, grade, cert_number: form.cert_number || null };
 
     if (!editId) {
       const { data: row, error } = await supabase.from("cartes_pca").insert(payload as never).select().single();
@@ -238,7 +241,7 @@ export default function CartesPcaPage() {
         <div className="bar-right">
           <button
             onClick={() => {
-              const rows = [["Carte","N°","Bloc","Série","Note","Achat (€)","Cote (€)","Plus-value (€)"], ...sorted.map(r => [r.carte, r.numero, r.bloc, r.serie, r.note, r.prix_achat, r.cote, r.benef])];
+              const rows = [["Carte","N°","Bloc","Série","Certification","Grade","N° Cert","Défauts","Achat (€)","Cote (€)","Plus-value (€)"], ...sorted.map(r => [r.carte, r.numero, r.bloc, r.serie, r.certification || "", r.grade || "", r.cert_number || "", r.note, r.prix_achat, r.cote, r.benef])];
               const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
               const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" })); a.download = "cartes_pca.csv"; a.click();
             }}
@@ -346,9 +349,26 @@ export default function CartesPcaPage() {
                   <input value={form.numero} onChange={e => setForm(f => ({ ...f, numero: e.target.value }))} placeholder="004/165" />
                 </div>
                 <div className="form-group">
-                  <label>Note (PSA / BGS)</label>
-                  <input value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} placeholder="Ex: PSA 10, BGS 9.5…" />
+                  <label>Certification</label>
+                  <select value={form.certification} onChange={e => setForm(f => ({ ...f, certification: e.target.value }))}>
+                    <option value="">Aucune</option>
+                    {CERTIFICATIONS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                  </select>
                 </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Grade (1-10)</label>
+                  <input type="number" min="1" max="10" value={form.grade} onChange={e => setForm(f => ({ ...f, grade: e.target.value }))} placeholder="Ex: 9.5" />
+                </div>
+                <div className="form-group">
+                  <label>N° Certification</label>
+                  <input value={form.cert_number} onChange={e => setForm(f => ({ ...f, cert_number: e.target.value }))} placeholder="Ex: 123456789" />
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Notes / Défauts</label>
+                <textarea value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} placeholder="Ex: Petit scratch, centering parfait…" style={{ minHeight: 60, fontFamily: "monospace", fontSize: 12 }} />
               </div>
               <div className="form-row">
                 <div className="form-group">
