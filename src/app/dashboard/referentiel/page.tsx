@@ -141,13 +141,6 @@ const EXTENSIONS: Extension[] = [
   { id: "sv10", name: "Rivalités Destinées", nameEn: "Destined Rivals", bloc: "ECARLATE ET VIOLET", code: "DRI", cards: 244, releaseDate: "2025-05-30", symbol: "🆚" },
   { id: "sv10-5a", name: "Foudre Noire", nameEn: "Black Bolt", bloc: "ECARLATE ET VIOLET", code: "BLK", cards: 172, releaseDate: "2025-07-18", symbol: "⚫" },
   { id: "sv10-5b", name: "Flamme Blanche", nameEn: "White Flare", bloc: "ECARLATE ET VIOLET", code: "WHT", cards: 173, releaseDate: "2025-07-18", symbol: "⚪" },
-
-  // Scarlet & Violet 2026
-  { id: "sv11", name: "Tempête Ascendante", nameEn: "Ascending Storm", bloc: "ECARLATE ET VIOLET", code: "AST", cards: 268, releaseDate: "2026-02-06", symbol: "🌪️" },
-  { id: "sv12", name: "Légendes Ancestrales", nameEn: "Ancient Legends", bloc: "ECARLATE ET VIOLET", code: "ALG", cards: 285, releaseDate: "2026-05-08", symbol: "🗿" },
-  { id: "sv13", name: "Royaume Mystérieux", nameEn: "Mystical Realm", bloc: "ECARLATE ET VIOLET", code: "MYS", cards: 252, releaseDate: "2026-08-14", symbol: "🔮" },
-  { id: "sv14", name: "Supériorité Suprême", nameEn: "Supreme Power", bloc: "ECARLATE ET VIOLET", code: "SUP", cards: 279, releaseDate: "2026-11-06", symbol: "⚡" },
-  { id: "sv-special-2026", name: "Édition Spéciale 25ans", nameEn: "Special 25th Edition", bloc: "ECARLATE ET VIOLET", code: "S25", cards: 120, releaseDate: "2026-10-01", symbol: "🎂" },
 ];
 
 const BLOCS = ["Tous", "BASE SET ERA", "NEO ERA", "GYM ERA", "E-CARD ERA", "HOLON ERA", "DIAMANT ET PERLE", "HEARTGOLD ET SOULSILVER", "NOIR ET BLANC", "XY", "SOLEIL ET LUNE", "EPEE ET BOUCLIER", "ECARLATE ET VIOLET"];
