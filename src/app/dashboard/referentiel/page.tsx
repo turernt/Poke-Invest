@@ -141,9 +141,17 @@ const EXTENSIONS: Extension[] = [
   { id: "sv10", name: "Rivalités Destinées", nameEn: "Destined Rivals", bloc: "ECARLATE ET VIOLET", code: "DRI", cards: 244, releaseDate: "2025-05-30", symbol: "🆚" },
   { id: "sv10-5a", name: "Foudre Noire", nameEn: "Black Bolt", bloc: "ECARLATE ET VIOLET", code: "BLK", cards: 172, releaseDate: "2025-07-18", symbol: "⚫" },
   { id: "sv10-5b", name: "Flamme Blanche", nameEn: "White Flare", bloc: "ECARLATE ET VIOLET", code: "WHT", cards: 173, releaseDate: "2025-07-18", symbol: "⚪" },
+
+  // Mega Evolution (2026)
+  { id: "me2pt5", name: "Héros Transcendants", nameEn: "Ascended Heroes", bloc: "MEGA EVOLUTION", code: "ME02.5", cards: 295, releaseDate: "2026-01-30", symbol: "🕊️" },
+  { id: "me03", name: "Équilibre Parfait", nameEn: "Perfect Order", bloc: "MEGA EVOLUTION", code: "ME03", cards: 124, releaseDate: "2026-03-27", symbol: "⚖️" },
+  { id: "me04", name: "Chaos Ascendant", nameEn: "Chaos Rising", bloc: "MEGA EVOLUTION", code: "ME04", cards: 122, releaseDate: "2026-05-22", symbol: "🔱" },
+  { id: "me05", name: "Nuit Noire", nameEn: "Pitch Black", bloc: "MEGA EVOLUTION", code: "ME05", cards: 115, releaseDate: "2026-07-17", symbol: "⚫" },
+  { id: "me-30th", name: "30ème Célébration", nameEn: "30th Celebration", bloc: "MEGA EVOLUTION", code: "30TH", cards: 150, releaseDate: "2026-09-16", symbol: "🎂" },
+  { id: "me06", name: "Règne Delta", nameEn: "Delta Reign", bloc: "MEGA EVOLUTION", code: "ME06", cards: 130, releaseDate: "2026-11-06", symbol: "Δ" },
 ];
 
-const BLOCS = ["Tous", "BASE SET ERA", "NEO ERA", "GYM ERA", "E-CARD ERA", "HOLON ERA", "DIAMANT ET PERLE", "HEARTGOLD ET SOULSILVER", "NOIR ET BLANC", "XY", "SOLEIL ET LUNE", "EPEE ET BOUCLIER", "ECARLATE ET VIOLET"];
+const BLOCS = ["Tous", "MEGA EVOLUTION", "BASE SET ERA", "NEO ERA", "GYM ERA", "E-CARD ERA", "HOLON ERA", "DIAMANT ET PERLE", "HEARTGOLD ET SOULSILVER", "NOIR ET BLANC", "XY", "SOLEIL ET LUNE", "EPEE ET BOUCLIER", "ECARLATE ET VIOLET"];
 
 function blocClass(b: string) {
   if (b.includes("BASE")) return "bs";
@@ -231,6 +239,7 @@ export default function ReferentielPage() {
           {BLOCS.map(b => {
             let abbr = b;
             if (b === "Tous") abbr = "Tous";
+            else if (b === "MEGA EVOLUTION") abbr = "ME";
             else if (b === "BASE SET ERA") abbr = "BS";
             else if (b === "NEO ERA") abbr = "NEO";
             else if (b === "GYM ERA") abbr = "GYM";
