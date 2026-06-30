@@ -24,13 +24,6 @@ const CONDITIONS = [
   { value: "HP", label: "Très Usée (HP)" },
 ];
 
-const CERTIFICATIONS = [
-  { value: "PSA", label: "PSA" },
-  { value: "BGS", label: "BGS/Beckett" },
-  { value: "CGC", label: "CGC" },
-  { value: "SGC", label: "SGC" },
-];
-
 const SEARCH_CACHE: Record<string, TcgCard[]> = {};
 
 function blocClass(b: string) {
@@ -52,10 +45,6 @@ interface Carte {
   benef: number;
   imgUrl?: string | null;
   condition?: string;
-  grade?: number | null;
-  certification?: string;
-  cert_number?: string;
-  notes?: string;
 }
 
 interface TcgCard {
@@ -137,7 +126,7 @@ export default function CartesUnitePage() {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({
     carte: "", numero: "", bloc: "ECARLATE ET VIOLET", serie: "",
-    prix: "", cote: "", condition: "NM", grade: "", certification: "", cert_number: "", notes: ""
+    prix: "", cote: "", condition: "NM"
   });
   const [saving, setSaving] = useState(false);
 
@@ -217,7 +206,7 @@ export default function CartesUnitePage() {
   // CRUD
   const openAdd = () => {
     setEditId(null);
-    setForm({ carte: "", numero: "", bloc: "ECARLATE ET VIOLET", serie: "", prix: "", cote: "", condition: "NM", grade: "", certification: "", cert_number: "", notes: "" });
+    setForm({ carte: "", numero: "", bloc: "ECARLATE ET VIOLET", serie: "", prix: "", cote: "", condition: "NM" });
     setScanImg(null);
     setSuggestions([]);
     setShowSugg(false);
@@ -229,8 +218,7 @@ export default function CartesUnitePage() {
     setForm({
       carte: row.carte, numero: row.numero, bloc: row.bloc, serie: row.serie,
       prix: String(row.prix_achat), cote: String(row.cote),
-      condition: row.condition || "NM", grade: row.grade ? String(row.grade) : "",
-      certification: row.certification || "", cert_number: row.cert_number || "", notes: row.notes || ""
+      condition: row.condition || "NM"
     });
     setScanImg(row.imgUrl ?? null);
     setSuggestions([]);
@@ -245,20 +233,17 @@ export default function CartesUnitePage() {
     const serie = form.serie.trim().toUpperCase();
     const prix = parseFloat(form.prix);
     const cote = parseFloat(form.cote);
-    const grade = form.grade ? parseInt(form.grade) : null;
 
     if (!carte) { showToast("Le nom de la carte est requis", "error"); return; }
     if (!numero) { showToast("Le numéro est requis", "error"); return; }
     if (!serie) { showToast("La série est requise", "error"); return; }
     if (isNaN(prix) || prix < 0) { showToast("Prix d'achat invalide", "error"); return; }
     if (isNaN(cote) || cote < 0) { showToast("Cote invalide", "error"); return; }
-    if (grade && (grade < 1 || grade > 10)) { showToast("Le grade doit être entre 1 et 10", "error"); return; }
 
     setSaving(true);
     const payload = {
       user_id: user!.id, carte, numero, bloc: form.bloc, serie, prix_achat: prix, cote,
-      condition: form.condition, grade, certification: form.certification || null,
-      cert_number: form.cert_number || null, notes: form.notes || null
+      condition: form.condition
     };
 
     if (!editId) {
@@ -353,10 +338,6 @@ export default function CartesUnitePage() {
           prix_achat: parseFloat(row.prix_achat) || 0,
           cote: parseFloat(row.cote) || 0,
           condition: row.condition || "NM",
-          grade: row.grade ? parseInt(row.grade) : null,
-          certification: row.certification || null,
-          cert_number: row.cert_number || null,
-          notes: row.notes || null,
         };
 
         if (!payload.carte || !payload.numero || !payload.serie) { failed++; continue; }
@@ -426,7 +407,7 @@ export default function CartesUnitePage() {
           </button>
           <button
             onClick={() => {
-              const rows = [["Carte","N°","Bloc","Série","Achat (€)","Cote (€)","Plus-value (€)","État","Grade","Certification","N° Cert","Notes"], ...sorted.map(r => [r.carte, r.numero, r.bloc, r.serie, r.prix_achat, r.cote, r.benef, r.condition, r.grade || "", r.certification || "", r.cert_number || "", r.notes || ""])];
+              const rows = [["Carte","N°","Bloc","Série","État","Achat (€)","Cote (€)","Plus-value (€)"], ...sorted.map(r => [r.carte, r.numero, r.bloc, r.serie, r.condition || "NM", r.prix_achat, r.cote, r.benef])];
               const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
               const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" })); a.download = "cartes_unite.csv"; a.click();
             }}
@@ -611,42 +592,14 @@ export default function CartesUnitePage() {
                 </div>
               </div>
 
-              {/* ÉTAPE 4: État et certification */}
-              <div style={{ padding: "20px", borderBottom: "1px solid var(--border)" }}>
-                <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, textTransform: "uppercase", color: "var(--muted)" }}>État et certification</h3>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>État *</label>
-                    <select value={form.condition} onChange={e => setForm(f => ({ ...f, condition: e.target.value }))}>
-                      {CONDITIONS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Grade (1-10)</label>
-                    <input type="number" min="1" max="10" value={form.grade} onChange={e => setForm(f => ({ ...f, grade: e.target.value }))} placeholder="Ex: 8" />
-                  </div>
-                </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Certification</label>
-                    <select value={form.certification} onChange={e => setForm(f => ({ ...f, certification: e.target.value }))}>
-                      <option value="">Aucune</option>
-                      {CERTIFICATIONS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>N° Certification</label>
-                    <input value={form.cert_number} onChange={e => setForm(f => ({ ...f, cert_number: e.target.value }))} placeholder="Ex: 123456789" />
-                  </div>
-                </div>
-              </div>
-
-              {/* ÉTAPE 5: Notes */}
+              {/* ÉTAPE 4: État */}
               <div style={{ padding: "20px" }}>
-                <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, textTransform: "uppercase", color: "var(--muted)" }}>Notes</h3>
+                <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, textTransform: "uppercase", color: "var(--muted)" }}>État</h3>
                 <div className="form-group">
-                  <label>Remarques (optionnel)</label>
-                  <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Ex: Petit scratch coin haut droit…" style={{ minHeight: 80, fontFamily: "monospace", fontSize: 12 }} />
+                  <label>Condition *</label>
+                  <select value={form.condition} onChange={e => setForm(f => ({ ...f, condition: e.target.value }))}>
+                    {CONDITIONS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                  </select>
                 </div>
               </div>
 
