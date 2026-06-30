@@ -28,18 +28,21 @@ export default function ProfilePage() {
 
   const [identity, setIdentity] = useState({ displayName: "", username: "" });
   const [tagline, setTagline] = useState("Dresseur·se");
+  const [language, setLanguage] = useState<"FR" | "EN">("FR");
   const [passwords, setPasswords] = useState({ current: "", next: "", confirm: "" });
   const [strength, setStrength] = useState(0);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [savingId, setSavingId] = useState(false);
   const [savingPw, setSavingPw] = useState(false);
   const [savingTag, setSavingTag] = useState(false);
+  const [savingLang, setSavingLang] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     const meta = user.user_metadata || {};
     setIdentity({ displayName: meta.full_name || "", username: meta.username || "" });
     setTagline(meta.tagline || "Dresseur·se");
+    setLanguage(meta.language || "FR");
     setAvatarUrl(meta.avatar_url || null);
   }, [user]);
 
@@ -61,6 +64,14 @@ export default function ProfilePage() {
     await supabase.auth.updateUser({ data: { tagline: val } });
     setSavingTag(false);
     showToast("Tagline mis à jour !");
+  }, [supabase, showToast]);
+
+  const saveLanguage = useCallback(async (lang: "FR" | "EN") => {
+    setLanguage(lang);
+    setSavingLang(true);
+    await supabase.auth.updateUser({ data: { language: lang } });
+    setSavingLang(false);
+    showToast(lang === "FR" ? "Langue changée en Français !" : "Language changed to English!");
   }, [supabase, showToast]);
 
   const savePassword = useCallback(async (e: React.FormEvent) => {
@@ -139,6 +150,23 @@ export default function ProfilePage() {
             <button key={t} onClick={() => saveTaglineValue(t)}
               className={`tagline-chip${tagline === t ? " selected" : ""}`}>{t}</button>
           ))}
+        </div>
+      </div>
+
+      {/* Language */}
+      <div className="profile-section">
+        <div className="profile-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          Langue
+          {savingLang && <span style={{ marginLeft: "auto", fontSize: 11, color: "var(--muted)" }}>Sauvegarde…</span>}
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={() => saveLanguage("FR")}
+            className={`tagline-chip${language === "FR" ? " selected" : ""}`}
+            disabled={savingLang}>🇫🇷 Français</button>
+          <button onClick={() => saveLanguage("EN")}
+            className={`tagline-chip${language === "EN" ? " selected" : ""}`}
+            disabled={savingLang}>🇬🇧 English</button>
         </div>
       </div>
 
