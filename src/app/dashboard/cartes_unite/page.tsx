@@ -7,14 +7,31 @@ import { getSupabaseBrowser } from "@/lib/supabase-browser";
 const fmt = (n: number) =>
   new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
 
-const BLOCS = [
-  { value: "ECARLATE ET VIOLET", label: "Écarlate et Violet" },
-  { value: "EPEE ET BOUCLIER", label: "Épée et Bouclier" },
-  { value: "SOLEIL ET LUNE", label: "Soleil et Lune" },
-  { value: "XY", label: "XY" },
-  { value: "MEGA EVOLUTION", label: "Mega Evolution" },
-  { value: "Inconnu", label: "Autre / Inconnu" },
-];
+const BLOCS_LABELS: Record<string, { FR: string; EN: string }> = {
+  "ECARLATE ET VIOLET": { FR: "Écarlate et Violet", EN: "Scarlet & Violet" },
+  "EPEE ET BOUCLIER": { FR: "Épée et Bouclier", EN: "Sword & Shield" },
+  "SOLEIL ET LUNE": { FR: "Soleil et Lune", EN: "Sun & Moon" },
+  "XY": { FR: "XY", EN: "XY" },
+  "MEGA EVOLUTION": { FR: "Méga-Évolution", EN: "Mega Evolution" },
+  "BASE SET ERA": { FR: "Ère Base Set", EN: "Base Set Era" },
+  "NEO ERA": { FR: "Ère Neo", EN: "Neo Era" },
+  "GYM ERA": { FR: "Ère Gym", EN: "Gym Era" },
+  "E-CARD ERA": { FR: "Ère E-Card", EN: "E-Card Era" },
+  "HOLON ERA": { FR: "Ère Holon", EN: "Holon Era" },
+  "DIAMANT ET PERLE": { FR: "Diamant et Perle", EN: "Diamond & Pearl" },
+  "HEARTGOLD ET SOULSILVER": { FR: "HeartGold et SoulSilver", EN: "HeartGold & SoulSilver" },
+  "NOIR ET BLANC": { FR: "Noir et Blanc", EN: "Black & White" },
+  "Inconnu": { FR: "Autre / Inconnu", EN: "Other / Unknown" },
+};
+
+const getBlocLabel = (bloc: string, lang: "FR" | "EN") => {
+  return BLOCS_LABELS[bloc]?.[lang] || bloc;
+};
+
+const BLOCS = Object.keys(BLOCS_LABELS).map(value => ({
+  value,
+  label: BLOCS_LABELS[value].FR
+}));
 
 const CONDITIONS = [
   { value: "NM", label: "Neuve (NM)" },
@@ -25,19 +42,19 @@ const CONDITIONS = [
 ];
 
 const SERIES_BY_BLOC: Record<string, string[]> = {
-  "BASE SET ERA": ["Base Set", "Jungle", "Fossil"],
-  "NEO ERA": ["Neo Genesis", "Neo Discovery", "Neo Revelation", "Neo Destiny"],
-  "GYM ERA": ["Gym Heroes", "Gym Challenge"],
-  "E-CARD ERA": ["Expedition", "Aquapolis", "Skyridge"],
-  "HOLON ERA": ["Ruby & Sapphire", "Sandstorm", "Fire Red Leaf Green", "Team Magma vs Team Aqua", "Hidden Legends", "Emerald", "Unseen Forces", "Delta Species", "Legend Maker", "Holon Phantoms", "Crystal Guardians", "Dragon Frontiers", "Power Keepers"],
-  "DIAMANT ET PERLE": ["Diamond & Pearl", "Mysterious Treasures", "Secret Wonders", "Great Encounters", "Majestic Dawn", "Legends Awakened", "Stormfront", "Platinum", "Rising Rivals", "Supreme Victors", "Arceus"],
-  "HEARTGOLD ET SOULSILVER": ["HeartGold & SoulSilver", "Unleashed", "Undaunted", "Triumphant"],
-  "NOIR ET BLANC": ["Black & White", "Emerging Powers", "Noble Victories", "Next Destinies", "Dark Explorers", "Dragons Exalted", "Boundaries Crossed", "Plasma Storm", "Plasma Freeze", "Plasma Blast"],
-  "XY": ["XY", "Flashfire", "Furious Fists", "Phantom Forces", "Primal Clash", "Roaring Skies", "Ancient Roar", "Breakthrough", "BREAKpoint", "Generations", "Fates Collide", "Steam Siege", "Evolutions"],
-  "SOLEIL ET LUNE": ["Sun & Moon", "Guardians Rising", "Burning Shadows", "Crimson Invasion", "Ultra Prism", "Forbidden Light", "Celestial Storm", "Lost Thunder", "Team Up", "Unbroken Bonds", "Unified Minds", "Cosmic Eclipse"],
-  "EPEE ET BOUCLIER": ["Sword & Shield", "Rebel Clash", "Darkness Ablaze", "Vivid Voltage", "Battle Styles", "Chilling Reign", "Evolving Skies", "Fusion Strike", "Celebrations", "Brilliant Stars", "Pokémon GO", "Lost Origin", "Silver Tempest", "Crown Zenith"],
-  "ECARLATE ET VIOLET": ["Scarlet & Violet Base", "Obsidian Flames", "Paldea Evolved", "151", "Paradox Rift", "Twilight Masquerade", "Stellar Crown", "Surging Sparks", "Temporal Forces", "Paldean Fates", "Prismatic Evolutions", "Journey Together", "Destined Rivals", "Black Bolt", "White Flare"],
-  "MEGA EVOLUTION": ["Ascended Heroes", "Perfect Order", "Chaos Rising", "Pitch Black", "30th Celebration", "Delta Reign"],
+  "BASE SET ERA": ["Set de Base", "Jungle", "Fossile"],
+  "NEO ERA": ["Néo Genèse", "Néo Découverte", "Néo Révélation", "Néo Destinée"],
+  "GYM ERA": ["Gym Héros", "Gym Challenge"],
+  "E-CARD ERA": ["Expédition", "Aquapolis", "Skyridge"],
+  "HOLON ERA": ["Rubis et Saphir", "Tempête de Sable", "Feu Rouge Feuille Verte", "Équipe Magma vs Équipe Aqua", "Légendes Cachées", "Émeraude", "Pouvoirs Insoupçonnés", "Espèces Delta", "Créateur de Légendes", "Fantômes de Holon", "Gardiens de Cristal", "Frontière du Dragon", "Gardiens du Pouvoir"],
+  "DIAMANT ET PERLE": ["Diamant et Perle", "Trésors Mystérieux", "Secrets Merveilleux", "Grande Rencontres", "Aube Majestueuse", "Légendes Éveillées", "Tempête Ardente", "Platine", "Rivaux Émergents", "Victoires Suprêmes", "Arceus"],
+  "HEARTGOLD ET SOULSILVER": ["HeartGold & SoulSilver", "Déchaîné", "Imparable", "Triomphant"],
+  "NOIR ET BLANC": ["Noir et Blanc", "Pouvoirs Émergents", "Victoires Nobles", "Destinées Suivantes", "Explorateurs Noirs", "Dragons Exaltés", "Frontières Traversées", "Tempête Plasma", "Gel Plasma", "Explosion Plasma"],
+  "XY": ["XY", "Étincelles Flamboyantes", "Poings Furieux", "Forces Fantômes", "Choc Primordial", "Cieux Rugissants", "Cris Anciens", "Percée", "Point de Rupture", "Générations", "Destins Entrelacés", "Siège de Vapeur", "Évolutions"],
+  "SOLEIL ET LUNE": ["Soleil et Lune", "Gardiens Ascendants", "Ombres Brûlantes", "Invasion Écarlate", "Ultra-Prisme", "Lumière Interdite", "Tempête Céleste", "Tonnerre Perdu", "Travail d'Équipe", "Liens Indestructibles", "Esprits Unifiés", "Éclipse Cosmique"],
+  "EPEE ET BOUCLIER": ["Épée et Bouclier", "Rébellion Rebelle", "Obscurité Embrasée", "Tension Vivante", "Styles de Combat", "Règne Glacial", "Cieux Évolutifs", "Fusion Frappe", "Célébrations", "Étoiles Brillantes", "Pokémon GO", "Origines Perdues", "Tempête Argentée", "Zénith Suprême"],
+  "ECARLATE ET VIOLET": ["Série Base Écarlate et Violet", "Obsidienne Enflammée", "Évolutions à Paldea", "151", "Fissures Paradoxales", "Mascarade Crépusculaire", "Couronne Stellaire", "Flammes Déferlantes", "Failles Temporelles", "Destins de Paldea", "Évolutions Prismatiques", "Aventures Ensemble", "Rivalités Destinées", "Foudre Noire", "Flamme Blanche"],
+  "MEGA EVOLUTION": ["Héros Transcendants", "Équilibre Parfait", "Chaos Ascendant", "Nuit Noire", "30ème Célébration", "Règne Delta"],
 };
 
 const SEARCH_CACHE: Record<string, TcgCard[]> = {};
@@ -136,6 +153,7 @@ export default function CartesUnitePage() {
   const [view, setView] = useState<"list" | "gallery">("list");
   const [sort, setSort] = useState({ col: -1, asc: true });
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [language, setLanguage] = useState<"FR" | "EN">("FR");
 
   // Modal
   const [modal, setModal] = useState(false);
@@ -159,6 +177,7 @@ export default function CartesUnitePage() {
 
   const load = useCallback(async () => {
     if (!user) return;
+    setLanguage((user.user_metadata?.language as "FR" | "EN") || "FR");
     const { data: rows } = await supabase.from("cartes_unite").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
     setData((rows ?? []).map((r: Omit<Carte, "benef">) => ({ ...r, benef: (r.cote ?? 0) - (r.prix_achat ?? 0) })));
   }, [user, supabase]);
