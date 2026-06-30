@@ -16,6 +16,13 @@ const BLOCS = [
   { value: "Inconnu", label: "Autre / Inconnu" },
 ];
 
+const CERTIFICATIONS = [
+  { value: "PSA", label: "PSA" },
+  { value: "BGS", label: "BGS/Beckett" },
+  { value: "CGC", label: "CGC" },
+  { value: "SGC", label: "SGC" },
+];
+
 function blocClass(b: string) {
   const s = (b || "").toUpperCase();
   if (s.includes("ECARLATE") || s.includes("VIOLET")) return "ev";
@@ -34,6 +41,9 @@ interface Carte {
   prix_achat: number;
   cote: number;
   benef: number;
+  certification?: string;
+  grade?: number | null;
+  cert_number?: string;
 }
 
 interface TcgCard {
