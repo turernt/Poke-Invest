@@ -16,6 +16,23 @@ const BLOCS = [
   { value: "Inconnu", label: "Autre / Inconnu" },
 ];
 
+const CONDITIONS = [
+  { value: "NM", label: "Neuve (NM)" },
+  { value: "EXC", label: "Excellente (EXC)" },
+  { value: "LP", label: "Légèrement Usée (LP)" },
+  { value: "MP", label: "Modérément Usée (MP)" },
+  { value: "HP", label: "Très Usée (HP)" },
+];
+
+const CERTIFICATIONS = [
+  { value: "PSA", label: "PSA" },
+  { value: "BGS", label: "BGS/Beckett" },
+  { value: "CGC", label: "CGC" },
+  { value: "SGC", label: "SGC" },
+];
+
+const SEARCH_CACHE: Record<string, TcgCard[]> = {};
+
 function blocClass(b: string) {
   const s = (b || "").toUpperCase();
   if (s.includes("ECARLATE") || s.includes("VIOLET")) return "ev";
@@ -34,6 +51,11 @@ interface Carte {
   cote: number;
   benef: number;
   imgUrl?: string | null;
+  condition?: string;
+  grade?: number | null;
+  certification?: string;
+  cert_number?: string;
+  notes?: string;
 }
 
 interface TcgCard {
@@ -64,13 +86,35 @@ async function fetchCardImage(name: string, numero: string): Promise<string | nu
   }
 }
 
-// Autocomplete search via pokemontcg.io
+// Improved search with cache and number support
 async function searchTcgCards(query: string): Promise<TcgCard[]> {
   if (query.length < 2) return [];
+
+  // Check cache first
+  if (SEARCH_CACHE[query]) return SEARCH_CACHE[query];
+
   try {
-    const res = await fetch(`https://api.pokemontcg.io/v2/cards?q=name:${encodeURIComponent(query + "*")}&pageSize=8&select=id,name,number,set,images`);
+    let endpoint = `https://api.pokemontcg.io/v2/cards?pageSize=12&select=id,name,number,set,images`;
+
+    // Detect if searching by number (e.g., "25/102" or just "25")
+    if (/^\d+/.test(query)) {
+      endpoint += `&q=number:${encodeURIComponent(query)}`;
+    } else {
+      endpoint += `&q=name:${encodeURIComponent(query + "*")}`;
+    }
+
+    const res = await fetch(endpoint);
     const data = await res.json();
-    return data.data || [];
+    const results = data.data || [];
+
+    // Cache results (keep cache size manageable)
+    if (Object.keys(SEARCH_CACHE).length > 50) {
+      const firstKey = Object.keys(SEARCH_CACHE)[0];
+      delete SEARCH_CACHE[firstKey];
+    }
+    SEARCH_CACHE[query] = results;
+
+    return results;
   } catch {
     return [];
   }
@@ -91,7 +135,10 @@ export default function CartesUnitePage() {
   // Modal
   const [modal, setModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ carte: "", numero: "", bloc: "ECARLATE ET VIOLET", serie: "", prix: "", cote: "" });
+  const [form, setForm] = useState({
+    carte: "", numero: "", bloc: "ECARLATE ET VIOLET", serie: "",
+    prix: "", cote: "", condition: "NM", grade: "", certification: "", cert_number: "", notes: ""
+  });
   const [saving, setSaving] = useState(false);
 
   // Autocomplete
@@ -170,7 +217,7 @@ export default function CartesUnitePage() {
   // CRUD
   const openAdd = () => {
     setEditId(null);
-    setForm({ carte: "", numero: "", bloc: "ECARLATE ET VIOLET", serie: "", prix: "", cote: "" });
+    setForm({ carte: "", numero: "", bloc: "ECARLATE ET VIOLET", serie: "", prix: "", cote: "", condition: "NM", grade: "", certification: "", cert_number: "", notes: "" });
     setScanImg(null);
     setSuggestions([]);
     setShowSugg(false);
@@ -179,7 +226,12 @@ export default function CartesUnitePage() {
 
   const openEdit = (row: Carte) => {
     setEditId(row.id);
-    setForm({ carte: row.carte, numero: row.numero, bloc: row.bloc, serie: row.serie, prix: String(row.prix_achat), cote: String(row.cote) });
+    setForm({
+      carte: row.carte, numero: row.numero, bloc: row.bloc, serie: row.serie,
+      prix: String(row.prix_achat), cote: String(row.cote),
+      condition: row.condition || "NM", grade: row.grade ? String(row.grade) : "",
+      certification: row.certification || "", cert_number: row.cert_number || "", notes: row.notes || ""
+    });
     setScanImg(row.imgUrl ?? null);
     setSuggestions([]);
     setShowSugg(false);
@@ -193,14 +245,21 @@ export default function CartesUnitePage() {
     const serie = form.serie.trim().toUpperCase();
     const prix = parseFloat(form.prix);
     const cote = parseFloat(form.cote);
+    const grade = form.grade ? parseInt(form.grade) : null;
+
     if (!carte) { showToast("Le nom de la carte est requis", "error"); return; }
     if (!numero) { showToast("Le numéro est requis", "error"); return; }
     if (!serie) { showToast("La série est requise", "error"); return; }
     if (isNaN(prix) || prix < 0) { showToast("Prix d'achat invalide", "error"); return; }
     if (isNaN(cote) || cote < 0) { showToast("Cote invalide", "error"); return; }
+    if (grade && (grade < 1 || grade > 10)) { showToast("Le grade doit être entre 1 et 10", "error"); return; }
 
     setSaving(true);
-    const payload = { user_id: user!.id, carte, numero, bloc: form.bloc, serie, prix_achat: prix, cote };
+    const payload = {
+      user_id: user!.id, carte, numero, bloc: form.bloc, serie, prix_achat: prix, cote,
+      condition: form.condition, grade, certification: form.certification || null,
+      cert_number: form.cert_number || null, notes: form.notes || null
+    };
 
     if (!editId) {
       const { data: row, error } = await supabase.from("cartes_unite").insert(payload as never).select().single();
@@ -256,6 +315,62 @@ export default function CartesUnitePage() {
     showToast(`${ids.length} carte(s) supprimée(s)`);
   };
 
+  const handleImportCSV = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const text = await file.text();
+    const lines = text.split("\n").map(l => l.trim()).filter(l => l);
+    if (lines.length < 2) { showToast("CSV vide ou invalide", "error"); return; }
+
+    const headers = lines[0].split(",").map(h => h.trim().toLowerCase().replace(/["\s]/g, ""));
+    const expectedHeaders = ["carte", "numero", "bloc", "serie", "prix_achat", "cote"];
+    const missingHeaders = expectedHeaders.filter(h => !headers.includes(h));
+    if (missingHeaders.length > 0) { showToast(`Colonnes manquantes: ${missingHeaders.join(", ")}`, "error"); return; }
+
+    const rows: any[] = [];
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i].split(",").map(v => v.trim().replace(/^"|"$/g, ""));
+      if (values.filter(v => v).length < 5) continue;
+
+      const row: Record<string, any> = {};
+      headers.forEach((h, idx) => { row[h] = values[idx]; });
+      rows.push(row);
+    }
+
+    if (rows.length === 0) { showToast("Aucune carte trouvée dans le CSV", "error"); return; }
+
+    setSaving(true);
+    let added = 0, failed = 0;
+    for (const row of rows) {
+      try {
+        const payload = {
+          user_id: user!.id,
+          carte: row.carte?.trim(),
+          numero: row.numero?.trim(),
+          bloc: row.bloc || "Inconnu",
+          serie: (row.serie || row.extension || "")?.trim().toUpperCase(),
+          prix_achat: parseFloat(row.prix_achat) || 0,
+          cote: parseFloat(row.cote) || 0,
+          condition: row.condition || "NM",
+          grade: row.grade ? parseInt(row.grade) : null,
+          certification: row.certification || null,
+          cert_number: row.cert_number || null,
+          notes: row.notes || null,
+        };
+
+        if (!payload.carte || !payload.numero || !payload.serie) { failed++; continue; }
+
+        const { data: newRow, error } = await supabase.from("cartes_unite").insert(payload as never).select().single();
+        if (error) { failed++; }
+        else { added++; setData(prev => [{ ...newRow as Carte, benef: (newRow as Carte).cote - (newRow as Carte).prix_achat }, ...prev]); }
+      } catch { failed++; }
+    }
+    setSaving(false);
+    showToast(`${added} carte(s) importée(s), ${failed} erreur(s)`);
+    e.target.value = "";
+  };
+
   if (loading) return null;
 
   const SortIcon = ({ col }: { col: number }) => (
@@ -293,9 +408,25 @@ export default function CartesUnitePage() {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             </button>
           </div>
+          <input
+            type="file"
+            id="csv-import"
+            accept=".csv"
+            onChange={handleImportCSV}
+            style={{ display: "none" }}
+          />
+          <button
+            onClick={() => document.getElementById("csv-import")?.click()}
+            className="act-btn"
+            title="Importer CSV"
+            style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", fontSize: 12, fontWeight: 600 }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: 14, height: 14 }}><path d="M21 9v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 14 12 9 7 14"/><line x1="12" y1="9" x2="12" y2="21"/></svg>
+            Importer
+          </button>
           <button
             onClick={() => {
-              const rows = [["Carte","N°","Bloc","Série","Achat (€)","Cote (€)","Plus-value (€)"], ...sorted.map(r => [r.carte, r.numero, r.bloc, r.serie, r.prix_achat, r.cote, r.benef])];
+              const rows = [["Carte","N°","Bloc","Série","Achat (€)","Cote (€)","Plus-value (€)","État","Grade","Certification","N° Cert","Notes"], ...sorted.map(r => [r.carte, r.numero, r.bloc, r.serie, r.prix_achat, r.cote, r.benef, r.condition, r.grade || "", r.certification || "", r.cert_number || "", r.notes || ""])];
               const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
               const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" })); a.download = "cartes_unite.csv"; a.click();
             }}
@@ -304,7 +435,7 @@ export default function CartesUnitePage() {
             style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", fontSize: 12, fontWeight: 600 }}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: 14, height: 14 }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            CSV
+            Exporter
           </button>
           <span className="item-count">{sorted.length} carte{sorted.length !== 1 ? "s" : ""}</span>
         </div>
@@ -398,76 +529,128 @@ export default function CartesUnitePage() {
       {/* Modal */}
       {modal && (
         <div className="modal-overlay active" onClick={e => e.target === e.currentTarget && setModal(false)}>
-          <div className="modal-box">
+          <div className="modal-box" style={{ maxWidth: 600 }}>
             <div className="modal-head">
-              <span className="modal-title">{editId ? "Modifier" : "Ajouter"}</span>
+              <span className="modal-title">{editId ? "Modifier" : "Ajouter une carte"}</span>
               <button className="modal-close" onClick={() => setModal(false)} aria-label="Fermer">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
             </div>
-            <form onSubmit={handleSubmit}>
-              {/* Scan preview + carte name with autocomplete */}
-              <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-                {scanImg && (
-                  <div className="scan-preview">
-                    <img src={scanImg} alt="preview" />
-                  </div>
-                )}
-                <div style={{ flex: 1, position: "relative" }}>
-                  <div className="form-group">
-                    <label>Nom de la carte</label>
-                    <input
-                      value={form.carte}
-                      onChange={e => handleCarteInput(e.target.value)}
-                      onBlur={() => setTimeout(() => setShowSugg(false), 150)}
-                      onFocus={() => suggestions.length > 0 && setShowSugg(true)}
-                      placeholder="Ex: Dracaufeu, Pikachu VMAX…"
-                      autoComplete="off"
-                    />
-                    {showSugg && suggestions.length > 0 && (
-                      <ul className="scan-suggestions">
-                        {suggestions.map(c => (
-                          <li key={c.id} onMouseDown={() => pickSuggestion(c)}>
-                            {c.images?.small && <img src={c.images.small} alt={c.name} className="sugg-thumb" />}
-                            <div>
-                              <div className="sugg-name">{c.name}</div>
-                              <div className="sugg-meta">{c.number} · {c.set.name}</div>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+            <form onSubmit={handleSubmit} style={{ maxHeight: "80vh", overflow: "auto" }}>
+              {/* ÉTAPE 1: Chercher la carte */}
+              <div style={{ padding: "20px", borderBottom: "1px solid var(--border)" }}>
+                <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, textTransform: "uppercase", color: "var(--muted)" }}>Chercher la carte</h3>
+                <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                  {scanImg && (
+                    <div className="scan-preview" style={{ flexShrink: 0 }}>
+                      <img src={scanImg} alt="preview" style={{ width: 80, height: 110, objectFit: "cover", borderRadius: 4 }} />
+                    </div>
+                  )}
+                  <div style={{ flex: 1, position: "relative" }}>
+                    <div className="form-group">
+                      <label>Nom de la carte *</label>
+                      <input
+                        value={form.carte}
+                        onChange={e => handleCarteInput(e.target.value)}
+                        onBlur={() => setTimeout(() => setShowSugg(false), 150)}
+                        onFocus={() => suggestions.length > 0 && setShowSugg(true)}
+                        placeholder="Ex: Pikachu, Dracaufeu VMAX…"
+                        autoComplete="off"
+                      />
+                      {showSugg && suggestions.length > 0 && (
+                        <ul className="scan-suggestions" style={{ maxHeight: 250 }}>
+                          {suggestions.map(c => (
+                            <li key={c.id} onMouseDown={() => pickSuggestion(c)} style={{ display: "flex", gap: 10, padding: "8px 10px", alignItems: "center", cursor: "pointer", borderBottom: "1px solid var(--border)" }}>
+                              {c.images?.small && <img src={c.images.small} alt={c.name} className="sugg-thumb" style={{ width: 40, height: 56, objectFit: "cover", borderRadius: 2 }} />}
+                              <div style={{ flex: 1 }}>
+                                <div className="sugg-name" style={{ fontSize: 13, fontWeight: 600 }}>{c.name}</div>
+                                <div className="sugg-meta" style={{ fontSize: 12, color: "var(--muted)" }}>{c.number} · {c.set.name}</div>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="form-row wide">
-                <div className="form-group">
-                  <label>Numéro</label>
-                  <input value={form.numero} onChange={e => setForm(f => ({ ...f, numero: e.target.value }))} placeholder="004/165" />
+              {/* ÉTAPE 2: Détails de la série */}
+              <div style={{ padding: "20px", borderBottom: "1px solid var(--border)" }}>
+                <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, textTransform: "uppercase", color: "var(--muted)" }}>Détails</h3>
+                <div className="form-row wide">
+                  <div className="form-group">
+                    <label>Numéro *</label>
+                    <input value={form.numero} onChange={e => setForm(f => ({ ...f, numero: e.target.value }))} placeholder="004/165" />
+                  </div>
+                  <div className="form-group">
+                    <label>Bloc *</label>
+                    <select value={form.bloc} onChange={e => setForm(f => ({ ...f, bloc: e.target.value }))}>
+                      {BLOCS.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
+                    </select>
+                  </div>
                 </div>
                 <div className="form-group">
-                  <label>Bloc</label>
-                  <select value={form.bloc} onChange={e => setForm(f => ({ ...f, bloc: e.target.value }))}>
-                    {BLOCS.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
-                  </select>
-                </div>
-              </div>
-              <div className="form-group">
-                <label>Série / Extension</label>
-                <input value={form.serie} onChange={e => setForm(f => ({ ...f, serie: e.target.value }))} placeholder="Ex: 151, Évolutions Prismatiques…" />
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Prix d&apos;achat (€)</label>
-                  <input type="number" step="0.01" min="0" value={form.prix} onChange={e => setForm(f => ({ ...f, prix: e.target.value }))} placeholder="0,00" />
-                </div>
-                <div className="form-group">
-                  <label>Cote actuelle (€)</label>
-                  <input type="number" step="0.01" min="0" value={form.cote} onChange={e => setForm(f => ({ ...f, cote: e.target.value }))} placeholder="0,00" />
+                  <label>Série / Extension *</label>
+                  <input value={form.serie} onChange={e => setForm(f => ({ ...f, serie: e.target.value }))} placeholder="Ex: 151, Évolutions Prismatiques…" />
                 </div>
               </div>
-              <div className="form-actions">
+
+              {/* ÉTAPE 3: Valeur */}
+              <div style={{ padding: "20px", borderBottom: "1px solid var(--border)" }}>
+                <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, textTransform: "uppercase", color: "var(--muted)" }}>Valeur</h3>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Prix d&apos;achat (€) *</label>
+                    <input type="number" step="0.01" min="0" value={form.prix} onChange={e => setForm(f => ({ ...f, prix: e.target.value }))} placeholder="0,00" />
+                  </div>
+                  <div className="form-group">
+                    <label>Cote actuelle (€) *</label>
+                    <input type="number" step="0.01" min="0" value={form.cote} onChange={e => setForm(f => ({ ...f, cote: e.target.value }))} placeholder="0,00" />
+                  </div>
+                </div>
+              </div>
+
+              {/* ÉTAPE 4: État et certification */}
+              <div style={{ padding: "20px", borderBottom: "1px solid var(--border)" }}>
+                <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, textTransform: "uppercase", color: "var(--muted)" }}>État et certification</h3>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>État *</label>
+                    <select value={form.condition} onChange={e => setForm(f => ({ ...f, condition: e.target.value }))}>
+                      {CONDITIONS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Grade (1-10)</label>
+                    <input type="number" min="1" max="10" value={form.grade} onChange={e => setForm(f => ({ ...f, grade: e.target.value }))} placeholder="Ex: 8" />
+                  </div>
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Certification</label>
+                    <select value={form.certification} onChange={e => setForm(f => ({ ...f, certification: e.target.value }))}>
+                      <option value="">Aucune</option>
+                      {CERTIFICATIONS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>N° Certification</label>
+                    <input value={form.cert_number} onChange={e => setForm(f => ({ ...f, cert_number: e.target.value }))} placeholder="Ex: 123456789" />
+                  </div>
+                </div>
+              </div>
+
+              {/* ÉTAPE 5: Notes */}
+              <div style={{ padding: "20px" }}>
+                <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, textTransform: "uppercase", color: "var(--muted)" }}>Notes</h3>
+                <div className="form-group">
+                  <label>Remarques (optionnel)</label>
+                  <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Ex: Petit scratch coin haut droit…" style={{ minHeight: 80, fontFamily: "monospace", fontSize: 12 }} />
+                </div>
+              </div>
+
+              <div className="form-actions" style={{ padding: "20px", borderTop: "1px solid var(--border)", display: "flex", gap: 10, justifyContent: "flex-end" }}>
                 <button type="button" className="btn-cancel" onClick={() => setModal(false)}>Annuler</button>
                 <button type="submit" className="btn-submit" disabled={saving}>{saving ? "Enregistrement…" : editId ? "Enregistrer" : "Ajouter"}</button>
               </div>
