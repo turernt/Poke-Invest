@@ -14,7 +14,18 @@ interface Extension {
 }
 
 const EXTENSIONS: Extension[] = [
+  // Méga-Évolution
+  { id: "me05", name: "Nuit Noire", nameEn: "Pitch Black", bloc: "MEGA EVOLUTION", code: "PBL", cards: 119, releaseDate: "2026-07-17", symbol: "⚫" },
+  { id: "me04", name: "Chaos Ascendant", nameEn: "Chaos Rising", bloc: "MEGA EVOLUTION", code: "CRI", cards: 122, releaseDate: "2026-05-22", symbol: "🔱" },
+  { id: "me03", name: "Équilibre Parfait", nameEn: "Perfect Order", bloc: "MEGA EVOLUTION", code: "POR", cards: 124, releaseDate: "2026-03-27", symbol: "⚖️" },
+  { id: "me2pt5", name: "Héros Transcendants", nameEn: "Ascended Heroes", bloc: "MEGA EVOLUTION", code: "ASC", cards: 295, releaseDate: "2026-01-30", symbol: "🕊️" },
+  { id: "me02", name: "Flammes Fantasmagoriques", nameEn: "Phantasmal Flames", bloc: "MEGA EVOLUTION", code: "PFL", cards: 130, releaseDate: "2025-11-14", symbol: "👻" },
+  { id: "me01", name: "Méga-Évolution", nameEn: "Mega Evolution", bloc: "MEGA EVOLUTION", code: "MEG", cards: 188, releaseDate: "2025-10-10", symbol: "🟣" },
   // Écarlate et Violet
+  { id: "sv10-5a", name: "Foudre Noire", nameEn: "Black Bolt", bloc: "ECARLATE ET VIOLET", code: "BLK", cards: 172, releaseDate: "2025-07-18", symbol: "⬛" },
+  { id: "sv10-5b", name: "Flamme Blanche", nameEn: "White Flare", bloc: "ECARLATE ET VIOLET", code: "WHT", cards: 173, releaseDate: "2025-07-18", symbol: "⬜" },
+  { id: "sv10", name: "Rivalités Destinées", nameEn: "Destined Rivals", bloc: "ECARLATE ET VIOLET", code: "DRI", cards: 244, releaseDate: "2025-05-30", symbol: "🆚" },
+  { id: "sv9-jtg", name: "Aventures Ensemble", nameEn: "Journey Together", bloc: "ECARLATE ET VIOLET", code: "JTG", cards: 190, releaseDate: "2025-03-28", symbol: "🚂" },
   { id: "sv9", name: "Destins de Paldea", nameEn: "Paldean Fates", bloc: "ECARLATE ET VIOLET", code: "PAF", cards: 245, releaseDate: "2024-01-26", symbol: "⋆" },
   { id: "sv8pt5", name: "Failles Temporelles", nameEn: "Temporal Forces", bloc: "ECARLATE ET VIOLET", code: "TEF", cards: 218, releaseDate: "2024-03-22", symbol: "⏱" },
   { id: "sv6", name: "Mascarade Crépusculaire", nameEn: "Twilight Masquerade", bloc: "ECARLATE ET VIOLET", code: "TWM", cards: 226, releaseDate: "2024-05-24", symbol: "🎭" },
@@ -50,9 +61,10 @@ const EXTENSIONS: Extension[] = [
   { id: "sm7", name: "Poings dans le Feu !", nameEn: "Celestial Storm", bloc: "SOLEIL ET LUNE", code: "CES", cards: 183, releaseDate: "2018-08-03", symbol: "🌀" },
 ];
 
-const BLOCS = ["Tous", "ECARLATE ET VIOLET", "EPEE ET BOUCLIER", "SOLEIL ET LUNE"];
+const BLOCS = ["Tous", "MEGA EVOLUTION", "ECARLATE ET VIOLET", "EPEE ET BOUCLIER", "SOLEIL ET LUNE"];
 
 function blocClass(b: string) {
+  if (b.includes("MEGA")) return "me";
   if (b.includes("ECARLATE")) return "ev";
   if (b.includes("EPEE")) return "eb";
   if (b.includes("SOLEIL")) return "sl";
@@ -60,6 +72,7 @@ function blocClass(b: string) {
 }
 
 function blocLabel(b: string) {
+  if (b.includes("MEGA")) return "Méga-Évolution";
   if (b.includes("ECARLATE")) return "Écarlate et Violet";
   if (b.includes("EPEE")) return "Épée et Bouclier";
   if (b.includes("SOLEIL")) return "Soleil et Lune";
@@ -128,7 +141,7 @@ export default function ReferentielPage() {
                 color: selectedBloc === b ? "#fff" : "var(--muted)",
               }}
             >
-              {b === "Tous" ? "Tous" : b === "ECARLATE ET VIOLET" ? "EV" : b === "EPEE ET BOUCLIER" ? "EB" : "SL"}
+              {b === "Tous" ? "Tous" : b === "MEGA EVOLUTION" ? "ME" : b === "ECARLATE ET VIOLET" ? "EV" : b === "EPEE ET BOUCLIER" ? "EB" : "SL"}
             </button>
           ))}
         </div>
